@@ -28,13 +28,36 @@ Netflix-style user behavior data를 활용해 고객 세그먼트, 군집화, ch
 │   ├── 03_clustering_scaled.ipynb
 │   ├── 04_churn_modeling_baseline.ipynb
 │   ├── 05_churn_modeling_tuning_ensemble.ipynb
-│   └── 06_churn_model_interpretation_action.ipynb
+│   ├── 06_churn_model_interpretation_action.ipynb
+│   ├── 07-1_churn_feature_engineering_first_try.ipynb
+│   ├── 07-2_churn_behavior_feature_engineering_pipeline.ipynb
+│   ├── 07-3_churn_auc_f1_optimization.ipynb
+│   ├── 07-4_churn_f1_optimization_light.ipynb
+│   └── 07-5_churn_paper_based_feature_engineering.ipynb
+├── outputs/
+│   ├── churn_risk_scores_test.csv
+│   ├── churn_model_final_result.csv
+│   ├── churn_threshold_result.csv
+│   ├── final_churn_model_eval.csv
+│   ├── final_churn_risk_scores_test.csv
+│   └── final_churn_topk_metrics.csv
+├── models/
+│   ├── final_churn_stacking_pipeline.joblib
+│   └── final_churn_model_metadata.json
+├── reports/
+│   ├── index.html
+│   ├── modeling_methodology.html
+│   └── top_risk_retention_strategy.html
+├── scripts/
+│   ├── build_modeling_methodology_report.py
+│   └── build_top_risk_retention_report.py
+├── ott_churn_feature_engineering_plan.md
 ├── pyproject.toml
 ├── uv.lock
 └── README.md
 ```
 
-`outputs/` 폴더는 `05` 노트북의 Risk Score 저장 섹션을 실행하면 생성됩니다. `06` 노트북은 이 저장 결과를 읽어 분석합니다.
+`outputs/` 폴더는 `05`와 `07` 계열 노트북의 저장 섹션을 실행하면 생성됩니다. `06` 노트북과 `reports/` HTML 리포트는 저장된 risk score와 성능 결과를 읽어 분석합니다.
 
 ## Environment
 
@@ -92,6 +115,59 @@ uv run jupyter lab
    - cluster × risk 결합 분석
    - retention action matrix
 
+7. `07-1_churn_feature_engineering_first_try.ipynb`
+   - ratio, risk flag, interaction, bin 기반 1차 feature engineering
+   - 원본 Stacking 모델과 engineered feature set 비교
+   - top-k targeting 관점에서 개선 여부 확인
+
+8. `07-2_churn_behavior_feature_engineering_pipeline.ipynb`
+   - train 기준 quantile을 fit하는 leakage-safe behavior feature pipeline
+   - `inactive_low_watch_flag`, `low_interest_flag`, `basic_mobile_flag`, `engagement_score` 등 생성
+   - 모델 입력보다는 retention action 해석용 피처로 활용하는 결론 도출
+
+9. `07-3_churn_auc_f1_optimization.ipynb`
+   - ROC AUC와 F1 개선 목적의 compact feature 및 모델 탐색
+   - Logistic Regression, LightGBM, XGBoost, CatBoost, soft average ensemble 비교
+   - ranking 목적과 threshold 분류 목적의 후보가 다를 수 있음을 확인
+
+10. `07-4_churn_f1_optimization_light.ipynb`
+    - F1 기준 lightweight search
+    - valid threshold tuning 후 test set에서 최종 확인
+    - F1 직접 최적화가 기존 최고 후보를 넘는지 검증
+
+11. `07-5_churn_paper_based_feature_engineering.ipynb`
+    - OTT 구독 해지 관련 논문을 바탕으로 paper-based feature engineering 수행
+    - 가격 대비 가치, 추천/개인화 반응, 전환 위험, 구독 피로감, 몰아보기/콘텐츠 고갈 proxy 생성
+    - 성능 개선보다는 해석용 진단 피처로 가치가 있음을 확인
+
+## HTML Reports
+
+분석 결과를 발표/공유하기 쉽게 HTML 리포트로 정리했습니다.
+
+- `reports/index.html`
+  - 리포트 목차 페이지
+  - 모델링 방법론과 비즈니스 인사이트 페이지로 이동
+
+- `reports/modeling_methodology.html`
+  - 피처 선택 기준
+  - feature engineering 실험 결과
+  - 논문 기반 feature engineering 결과
+  - 모델링 흐름과 PR AUC / recall 중심 평가 이유
+  - threshold와 ranking을 분리해 해석한 이유
+
+- `reports/top_risk_retention_strategy.html`
+  - top-k targeting 결과
+  - 상위 10% risk 고객 세분화
+  - 성장기/장기 Basic 고객을 핵심 타겟으로 선정한 근거
+  - 핵심 타겟 전용 retention action 제안
+
+HTML 리포트 재생성:
+
+```bash
+uv run python scripts/build_modeling_methodology_report.py
+uv run python scripts/build_top_risk_retention_report.py
+```
+
 ## Key Results
 
 모델링 단계에서는 Logistic Regression이 강한 기준선을 만들었고, 튜닝 및 앙상블 이후 Stacking이 가장 높은 PR AUC를 기록했습니다. 다만 단일 모델 대비 개선 폭은 작았습니다.
@@ -108,6 +184,12 @@ uv run jupyter lab
 - 상위 20% 타겟팅 시 전체 이탈자의 약 67.9% 포착
 - 상위 30% 타겟팅 시 전체 이탈자의 약 82.0% 포착
 
+Feature engineering 실험 결과:
+
+- 1차 feature engineering과 behavior feature engineering은 원본 feature set 대비 PR AUC와 top 10% lift를 일관되게 개선하지 못했습니다.
+- 논문 기반 feature engineering도 test F1, ROC AUC, PR AUC 기준으로 원본 feature set을 넘지 못했습니다.
+- 따라서 최종 risk score 산출은 원본 feature 기반 모델을 유지하고, engineered feature는 고위험 고객의 원인 해석과 campaign action 세분화에 활용하는 것이 적절합니다.
+
 ## Final Interpretation
 
 이 모델은 모든 고객을 완벽히 churn / non-churn으로 분류하는 모델이라기보다, 이탈 방지 캠페인의 우선순위를 정하는 risk ranking 모델로 활용하는 것이 적절합니다.
@@ -118,10 +200,23 @@ uv run jupyter lab
 - Medium risk: 저비용 캠페인 대상
 - Low risk: 고비용 캠페인 제외 대상
 
-고위험 고객은 최근 로그인 공백이 길고, 주간 시청 시간이 낮으며, completion rate와 recommendation click rate가 낮은 특징을 보였습니다. Basic 요금제와 Mobile 사용 비중도 높아, 복귀 유도 메시지, 모바일 친화 추천, 짧은 콘텐츠 큐레이션, 요금제 혜택 제안이 적합합니다.
+고위험 고객은 최근 로그인 공백이 길고, 주간 시청 시간이 낮으며, completion rate와 recommendation click rate가 낮은 특징을 보였습니다. Basic 요금제와 Mobile 사용 비중도 높았습니다.
+
+추가 HTML 리포트에서는 모든 고위험 구간에 무차별적으로 맞춤형 retention을 적용하기보다, 상위 10% 고객 안에서 규모와 이탈률이 모두 큰 **성장기/장기 Basic 고객**을 핵심 타겟으로 선정했습니다.
+
+핵심 타겟 요약:
+
+- 상위 10% risk 고객 중 성장기/장기 Basic 고객: 586명
+- 상위 10% 고객의 약 58.6%
+- 실제 churn rate: 약 88.6%
+- 상위 10% 내 실제 이탈자의 약 59.2% 포함
+
+따라서 우선 액션은 Basic 유지 혜택, Basic Plus 또는 Standard 체험 제안, 모바일 재활성화 메시지, 짧은 콘텐츠 큐레이션처럼 비용과 실행 복잡도를 통제할 수 있는 캠페인이 적절합니다.
 
 ## Notes Before Running
 
 - `06` 노트북은 모델을 다시 학습하지 않습니다.
 - 먼저 `05` 노트북 마지막의 Risk Score 저장 섹션을 실행해야 합니다.
-- `catboost_info/`, `.venv/`, `.ipynb_checkpoints/`, `.DS_Store` 등은 `.gitignore`로 제외합니다.
+- `07` 계열 노트북은 추가 feature engineering / optimization 실험 기록입니다. 최종 운영 결론은 원본 feature 기반 risk score를 유지하는 쪽입니다.
+- `reports/` HTML 파일은 `outputs/` CSV를 읽어 생성한 정적 리포트입니다.
+- `catboost_info/`, `.venv/`, `.ipynb_checkpoints/`, `.DS_Store`, `.matplotlib-cache/` 등은 `.gitignore`로 제외합니다.
