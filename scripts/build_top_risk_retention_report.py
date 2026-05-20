@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import os
+import re
 from io import BytesIO
 from pathlib import Path
 
@@ -16,7 +17,8 @@ import matplotlib.pyplot as plt
 RISK_SCORE_PATH = ROOT / "outputs" / "churn_risk_scores_test.csv"
 MODEL_RESULT_PATH = ROOT / "outputs" / "churn_model_final_result.csv"
 THRESHOLD_RESULT_PATH = ROOT / "outputs" / "churn_threshold_result.csv"
-REPORT_PATH = ROOT / "reports" / "top_risk_retention_strategy.html"
+ANALYSIS_PATH = ROOT / "reports" / "retention_analysis.html"
+STRATEGY_PATH = ROOT / "reports" / "top_risk_retention_strategy.html"
 
 
 def pct(value: float, digits: int = 1) -> str:
@@ -34,28 +36,26 @@ def fig_to_base64(fig: plt.Figure) -> str:
     return base64.b64encode(buf.getvalue()).decode("ascii")
 
 
-def dataframe_to_html(df: pd.DataFrame, classes: str = "data-table") -> str:
-    return df.to_html(index=False, classes=classes, border=0, escape=False)
+def dataframe_to_html(df: pd.DataFrame, highlight_terms: tuple[str, ...] = ()) -> str:
+    html = df.to_html(index=False, classes="data-table", border=0, escape=False)
+    if not highlight_terms:
+        return html
 
+    def mark_row(match: re.Match[str]) -> str:
+        row_html = match.group(0)
+        should_highlight = False
+        for term in highlight_terms:
+            if "|" in term:
+                should_highlight = all(part in row_html for part in term.split("|"))
+            else:
+                should_highlight = term in row_html
+            if should_highlight:
+                break
+        if should_highlight:
+            return row_html.replace("<tr>", '<tr class="highlight-row">', 1)
+        return row_html
 
-def build_topk(df: pd.DataFrame) -> pd.DataFrame:
-    base_rate = df["actual_churn"].mean()
-    rows = []
-    for target_pct in [0.05, 0.10, 0.20, 0.30]:
-        n = int(len(df) * target_pct)
-        top = df.head(n)
-        churn_rate = top["actual_churn"].mean()
-        captured = top["actual_churn"].sum() / df["actual_churn"].sum()
-        rows.append(
-            {
-                "target_pct": target_pct,
-                "customers": n,
-                "churn_rate": churn_rate,
-                "lift": churn_rate / base_rate,
-                "captured_churner": captured,
-            }
-        )
-    return pd.DataFrame(rows)
+    return re.sub(r"<tr>\s*(?:<td>.*?</td>\s*)+</tr>", mark_row, html, flags=re.S)
 
 
 def add_segments(df: pd.DataFrame) -> pd.DataFrame:
@@ -81,129 +81,410 @@ def add_segments(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def build_topk(df: pd.DataFrame) -> pd.DataFrame:
+    base_rate = df["actual_churn"].mean()
+    rows = []
+    for target_pct in [0.05, 0.10, 0.20, 0.30]:
+        top = df.head(int(len(df) * target_pct))
+        rows.append(
+            {
+                "target_pct": target_pct,
+                "customers": len(top),
+                "churn_rate": top["actual_churn"].mean(),
+                "lift": top["actual_churn"].mean() / base_rate,
+                "captured_churner": top["actual_churn"].sum() / df["actual_churn"].sum(),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 def make_topk_chart(topk: pd.DataFrame) -> str:
     labels = [f"Top {int(v * 100)}%" for v in topk["target_pct"]]
-    fig, axes = plt.subplots(1, 2, figsize=(10.5, 3.8))
+    fig, axes = plt.subplots(1, 2, figsize=(10.8, 4.0))
 
-    axes[0].bar(labels, topk["churn_rate"] * 100, color="#2563eb")
-    axes[0].set_title("Actual Churn Rate by Target Size")
-    axes[0].set_ylabel("Churn rate (%)")
+    axes[0].bar(labels, topk["churn_rate"] * 100, color="#1f5fbf")
+    axes[0].set_title("Actual Churn Rate")
     axes[0].set_ylim(0, 100)
-    for i, v in enumerate(topk["churn_rate"] * 100):
-        axes[0].text(i, v + 2, f"{v:.1f}%", ha="center", fontsize=9)
+    axes[0].set_ylabel("Churn rate (%)")
+    for i, value in enumerate(topk["churn_rate"] * 100):
+        axes[0].text(i, value + 2, f"{value:.1f}%", ha="center", fontsize=9)
 
-    axes[1].bar(labels, topk["captured_churner"] * 100, color="#16a34a")
-    axes[1].set_title("Captured Churners by Target Size")
-    axes[1].set_ylabel("Captured churners (%)")
+    axes[1].bar(labels, topk["captured_churner"] * 100, color="#287a47")
+    axes[1].set_title("Captured Churners")
     axes[1].set_ylim(0, 100)
-    for i, v in enumerate(topk["captured_churner"] * 100):
-        axes[1].text(i, v + 2, f"{v:.1f}%", ha="center", fontsize=9)
+    axes[1].set_ylabel("Captured churners (%)")
+    for i, value in enumerate(topk["captured_churner"] * 100):
+        axes[1].text(i, value + 2, f"{value:.1f}%", ha="center", fontsize=9)
 
     fig.tight_layout()
     return fig_to_base64(fig)
 
 
 def make_tenure_chart(high_tenure: pd.DataFrame) -> str:
-    labels = high_tenure["tenure_segment"].astype(str).tolist()
-    fig, ax1 = plt.subplots(figsize=(9.8, 4.2))
+    labels = high_tenure["tenure_segment"].astype(str)
+    fig, ax1 = plt.subplots(figsize=(10.2, 4.3))
     ax2 = ax1.twinx()
-
-    bars = ax1.bar(labels, high_tenure["customers"], color="#475569", alpha=0.82)
-    line = ax2.plot(
-        labels,
-        high_tenure["churn_rate"] * 100,
-        color="#dc2626",
-        marker="o",
-        linewidth=2.3,
-        label="Churn rate",
-    )
-
-    ax1.set_title("Top 10% Risk Customers by Tenure Segment")
+    ax1.bar(labels, high_tenure["customers"], color="#46566f", alpha=0.86)
+    ax2.plot(labels, high_tenure["churn_rate"] * 100, color="#b42318", marker="o", linewidth=2.4)
+    ax1.set_title("Top 10% Risk Customers by Tenure")
     ax1.set_ylabel("Customers")
-    ax2.set_ylabel("Actual churn rate (%)")
+    ax2.set_ylabel("Churn rate (%)")
     ax2.set_ylim(0, 100)
-    ax1.tick_params(axis="x", rotation=15)
-
-    for bar in bars:
-        h = bar.get_height()
-        ax1.text(bar.get_x() + bar.get_width() / 2, h + 8, f"{int(h)}", ha="center", fontsize=9)
-    for i, v in enumerate(high_tenure["churn_rate"] * 100):
-        ax2.text(i, v + 2.2, f"{v:.1f}%", ha="center", color="#991b1b", fontsize=9)
-
-    ax2.legend(line, ["Churn rate"], loc="upper right")
-    fig.tight_layout()
-    return fig_to_base64(fig)
-
-
-def make_risk_tenure_heatmap(risk_tenure: pd.DataFrame) -> str:
-    pivot = risk_tenure.pivot(index="risk_group", columns="tenure_segment", values="churn_rate")
-    fig, ax = plt.subplots(figsize=(9.8, 3.8))
-    image = ax.imshow(pivot.values * 100, cmap="Reds", vmin=0, vmax=100)
-
-    ax.set_title("Churn Rate Heatmap: Risk Group x Tenure")
-    ax.set_xticks(range(len(pivot.columns)), pivot.columns.astype(str), rotation=15, ha="right")
-    ax.set_yticks(range(len(pivot.index)), pivot.index.astype(str))
-
-    for i in range(pivot.shape[0]):
-        for j in range(pivot.shape[1]):
-            ax.text(j, i, f"{pivot.values[i, j] * 100:.1f}%", ha="center", va="center", fontsize=9)
-
-    cbar = fig.colorbar(image, ax=ax)
-    cbar.set_label("Churn rate (%)")
-    fig.tight_layout()
-    return fig_to_base64(fig)
-
-
-def make_activity_chart(high_activity: pd.DataFrame) -> str:
-    table = high_activity.pivot(index="tenure_segment", columns="activity_segment", values="customers").fillna(0)
-    fig, ax = plt.subplots(figsize=(9.8, 4.0))
-    table.plot(kind="bar", stacked=True, ax=ax, color=["#22c55e", "#f59e0b", "#ef4444"])
-    ax.set_title("Top 10% Risk Customers: Tenure x Last Login Activity")
-    ax.set_xlabel("")
-    ax.set_ylabel("Customers")
-    ax.tick_params(axis="x", rotation=15)
-    ax.legend(title="Last login")
+    ax1.tick_params(axis="x", rotation=12)
+    for i, value in enumerate(high_tenure["customers"]):
+        ax1.text(i, value + 8, f"{int(value)}", ha="center", fontsize=9)
+    for i, value in enumerate(high_tenure["churn_rate"] * 100):
+        ax2.text(i, value + 2, f"{value:.1f}%", ha="center", fontsize=9, color="#8a1c13")
     fig.tight_layout()
     return fig_to_base64(fig)
 
 
 def make_focus_profile_chart(feature_profile: pd.DataFrame) -> str:
     metrics = [
-        "days_since_last_login",
-        "avg_watch_time_minutes_per_week",
-        "completion_rate",
-        "recommendation_click_rate",
+        ("days_since_last_login", "Days since login"),
+        ("avg_watch_time_minutes_per_week", "Weekly watch min"),
+        ("completion_rate", "Completion rate"),
+        ("recommendation_click_rate", "Recommendation click rate"),
     ]
-    titles = ["Days since login", "Weekly watch min", "Completion rate", "Recommendation click rate"]
-    fig, axes = plt.subplots(2, 2, figsize=(10.5, 6.2))
+    fig, axes = plt.subplots(2, 2, figsize=(10.5, 6.1))
     axes = axes.ravel()
-
-    for ax, metric, title in zip(axes, metrics, titles, strict=True):
-        bars = ax.bar(feature_profile["group"], feature_profile[metric], color=["#64748b", "#2563eb", "#dc2626"])
+    for ax, (metric, title) in zip(axes, metrics, strict=True):
+        bars = ax.bar(feature_profile["group"], feature_profile[metric], color=["#7b8794", "#1f5fbf", "#b42318"])
         ax.set_title(title)
-        ax.tick_params(axis="x", rotation=12)
+        ax.tick_params(axis="x", rotation=10)
+        ymax = max(feature_profile[metric]) or 1
         for bar in bars:
-            h = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width() / 2, h + max(feature_profile[metric]) * 0.025, f"{h:.1f}", ha="center", fontsize=8)
-
+            height = bar.get_height()
+            ax.text(bar.get_x() + bar.get_width() / 2, height + ymax * 0.025, f"{height:.1f}", ha="center", fontsize=8)
     fig.tight_layout()
     return fig_to_base64(fig)
 
 
+def make_cluster_risk_heatmap(cluster_risk: pd.DataFrame) -> str:
+    pivot = cluster_risk.pivot(index="cluster", columns="risk_group", values="churn_rate")
+    pivot = pivot[[col for col in ["High: top 10%", "Medium: 10-30%", "Low: 30-100%"] if col in pivot.columns]]
+    fig, ax = plt.subplots(figsize=(8.8, 3.8))
+    image = ax.imshow(pivot.values * 100, cmap="Reds", vmin=0, vmax=100)
+    ax.set_title("Churn Rate: KMeans Cluster x Risk Group")
+    ax.set_xticks(range(len(pivot.columns)), pivot.columns.astype(str), rotation=12, ha="right")
+    ax.set_yticks(range(len(pivot.index)), [f"Cluster {idx}" for idx in pivot.index])
+    for i in range(pivot.shape[0]):
+        for j in range(pivot.shape[1]):
+            ax.text(j, i, f"{pivot.values[i, j] * 100:.1f}%", ha="center", va="center", fontsize=9)
+    fig.colorbar(image, ax=ax).set_label("Churn rate (%)")
+    fig.tight_layout()
+    return fig_to_base64(fig)
+
+
+def css() -> str:
+    return """
+    :root {
+      --text: #121826;
+      --muted: #5e6b7a;
+      --line: #dbe2ea;
+      --panel: #ffffff;
+      --soft: #f6f8fb;
+      --blue: #1f5fbf;
+      --green: #287a47;
+      --red: #b42318;
+      --amber: #a65f00;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #ffffff; line-height: 1.56; }
+    header { background: #f7f9fc; border-bottom: 1px solid var(--line); padding: 34px 32px 30px; }
+    nav { max-width: 1120px; margin: 0 auto 22px; display: flex; flex-wrap: wrap; gap: 8px; }
+    nav a { color: #334155; text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; background: #ffffff; font-size: 14px; }
+    nav a.active { color: #ffffff; background: var(--blue); border-color: var(--blue); }
+    .hero { max-width: 1120px; margin: 0 auto; display: grid; grid-template-columns: 1.4fr 0.9fr; gap: 20px; align-items: end; }
+    h1 { margin: 0; font-size: 36px; line-height: 1.18; letter-spacing: 0; }
+    .subtitle { margin: 12px 0 0; color: var(--muted); font-size: 16px; max-width: 760px; }
+    .kpi-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .kpi, .card, .action, .evidence { border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+    .kpi { padding: 14px; }
+    .kpi span, .eyebrow { display: block; color: var(--muted); font-size: 13px; font-weight: 650; }
+    .kpi b { display: block; margin-top: 4px; font-size: 24px; }
+    main { max-width: 1120px; margin: 0 auto; padding: 30px 28px 64px; }
+    section { margin: 0 0 42px; }
+    h2 { margin: 0 0 14px; font-size: 24px; letter-spacing: 0; }
+    h3 { margin: 0 0 8px; font-size: 18px; }
+    p { margin: 8px 0 12px; }
+    .section-lead { max-width: 820px; color: var(--muted); }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .card, .action, .evidence { padding: 18px; }
+    .card strong, .action strong, .evidence strong { display: block; font-size: 19px; line-height: 1.28; margin: 4px 0 8px; }
+    .card p, .action p, .evidence p { color: var(--muted); font-size: 14px; }
+    .insight { border: 1px solid var(--line); border-radius: 8px; background: #ffffff; padding: 16px; }
+    .insight b { display: block; margin: 4px 0 6px; font-size: 22px; line-height: 1.2; }
+    .insight p { color: var(--muted); font-size: 14px; margin-bottom: 0; }
+    .reading-guide { border-left: 4px solid var(--blue); background: #f0f6ff; border-radius: 8px; padding: 14px 16px; margin: 14px 0 16px; }
+    .reading-guide strong { display: block; color: #174ea6; margin-bottom: 4px; }
+    .caption { color: var(--muted); font-size: 13px; margin: -8px 0 12px; }
+    .decision { border-left: 5px solid var(--red); background: #fff7f6; padding: 16px 18px; border-radius: 8px; margin: 16px 0 20px; }
+    .decision strong { display: block; color: var(--red); margin-bottom: 6px; font-size: 18px; }
+    .chart { border: 1px solid var(--line); border-radius: 8px; background: #ffffff; padding: 12px; margin: 14px 0 20px; }
+    .chart img { display: block; width: 100%; height: auto; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; margin: 12px 0 22px; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 14px; background: #ffffff; }
+    .data-table th { text-align: left; padding: 10px 9px; border-bottom: 2px solid #334155; white-space: nowrap; background: #fbfcfe; }
+    .data-table td { padding: 9px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    .data-table tr.highlight-row td { background: #fff7ed; font-weight: 650; }
+    .data-table tbody tr:hover td { background: #f8fafc; }
+    .data-table tr:last-child td { border-bottom: 0; }
+    .small { color: var(--muted); font-size: 13px; }
+    ul { margin: 8px 0 0; padding-left: 20px; }
+    li { margin: 4px 0; }
+    footer { margin-top: 40px; border-top: 1px solid var(--line); padding-top: 18px; color: var(--muted); font-size: 13px; }
+    @media (max-width: 860px) {
+      header { padding: 28px 20px; }
+      main { padding: 24px 18px 48px; }
+      .hero, .grid-2, .grid-3, .kpi-row { grid-template-columns: 1fr; }
+      h1 { font-size: 29px; }
+    }
+    """
+
+
+def render_analysis(context: dict[str, object]) -> str:
+    return f"""<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Retention Analysis Evidence</title>
+  <style>{css()}</style>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="index.html">Report Home</a>
+      <a href="modeling_methodology.html">Modeling Methodology</a>
+      <a class="active" href="retention_analysis.html">Retention Analysis</a>
+      <a href="top_risk_retention_strategy.html">Final Strategy</a>
+    </nav>
+    <div class="hero">
+      <div>
+        <h1>Retention Target Analysis</h1>
+        <p class="subtitle">Risk score 기반 타겟팅의 타당성을 top-k, 가입기간, 요금제, 기기, KMeans cluster 관점에서 검증한 분석 페이지입니다.</p>
+      </div>
+      <div class="kpi-row">
+        <div class="kpi"><span>Top 30% captured</span><b>{context["top30_captured"]}</b></div>
+        <div class="kpi"><span>Top 10% churn</span><b>{context["top10_churn"]}</b></div>
+        <div class="kpi"><span>Focus target</span><b>{context["focus_customers"]}</b></div>
+      </div>
+    </div>
+  </header>
+  <main>
+    <section>
+      <h2>1. Top-k Ranking 성능</h2>
+      <p class="section-lead">Top 30%는 모델 ranking의 설명력을 검증하는 범위이며, Top 10%는 비용이 수반되는 retention action의 우선 실행 범위로 해석합니다.</p>
+      <div class="grid-3">
+        <div class="insight"><span class="eyebrow">Ranking coverage</span><b>{context["top30_captured"]}</b><p>Top 30% 구간에 포함된 전체 이탈자 비중.</p></div>
+        <div class="insight"><span class="eyebrow">Priority segment</span><b>{context["top10_churn"]}</b><p>Top 10% 구간의 실제 이탈률.</p></div>
+        <div class="insight"><span class="eyebrow">Operating scope</span><b>Top 10%</b><p>초기 유료 캠페인 집행 범위.</p></div>
+      </div>
+      <div class="reading-guide">
+        <strong>Interpretation</strong>
+        `Captured churners`는 커버리지, `Actual churn rate`는 타겟 품질을 의미합니다.
+        본 분석에서는 두 지표를 분리해 모델 검증 범위와 캠페인 실행 범위를 구분했습니다.
+      </div>
+      <div class="table-wrap">{context["topk_table"]}</div>
+      <p class="caption">Top 30%는 coverage, Top 10%는 execution quality 관점에서 해석합니다.</p>
+      <div class="chart"><img alt="Top-k targeting performance" src="data:image/png;base64,{context["topk_chart"]}" /></div>
+    </section>
+    <section>
+      <h2>2. Top 10% 내부 세분화</h2>
+      <p class="section-lead">상위 10% 안에서도 성장기와 장기 고객의 규모가 크고 이탈률도 높습니다. 이 두 구간을 요금제와 결합해 최종 핵심 타겟을 찾았습니다.</p>
+      <div class="grid-3">
+        <div class="insight"><span class="eyebrow">Largest tenure segment</span><b>{context["largest_tenure"]}</b><p>Top 10% 내 최대 가입기간 구간.</p></div>
+        <div class="insight"><span class="eyebrow">Focus target</span><b>{context["focus_customers"]}</b><p>성장기/장기 Basic 고객 규모.</p></div>
+        <div class="insight"><span class="eyebrow">Focus churn rate</span><b>{context["focus_churn"]}</b><p>핵심 타겟의 실제 이탈률.</p></div>
+      </div>
+      <div class="reading-guide">
+        <strong>Segmentation logic</strong>
+        가입기간별 규모와 이탈률을 먼저 확인한 뒤, 요금제 조건을 결합해 실행 가능한 핵심 타겟을 도출했습니다.
+      </div>
+      <div class="grid-2">
+        <div>
+          <div class="table-wrap">{context["high_tenure_table"]}</div>
+        </div>
+        <div class="chart"><img alt="Top 10 tenure profile" src="data:image/png;base64,{context["tenure_chart"]}" /></div>
+      </div>
+      <h3>가입기간 x 요금제</h3>
+      <p class="caption">가입기간 x 요금제 조합은 고객 수와 churn rate를 함께 기준으로 정렬했습니다.</p>
+      <div class="table-wrap">{context["tenure_subscription_table"]}</div>
+    </section>
+    <section>
+      <h2>3. 타겟 행동 특성 검증</h2>
+      <p class="section-lead">핵심 타겟은 Basic 고객이라는 단일 조건으로 고른 것이 아닙니다. 최근 접속 공백, 낮은 시청시간, 낮은 완료율, 낮은 추천 클릭률이 함께 관찰됩니다.</p>
+      <div class="grid-3">
+        <div class="insight"><span class="eyebrow">Login gap</span><b>{context["focus_login_gap"]}</b><p>핵심 타겟 평균 최근 미접속 기간.</p></div>
+        <div class="insight"><span class="eyebrow">Weekly watch</span><b>{context["focus_watch_min"]}</b><p>핵심 타겟 평균 주간 시청 시간.</p></div>
+        <div class="insight"><span class="eyebrow">Recommendation response</span><b>{context["focus_rec_click"]}</b><p>핵심 타겟 평균 추천 클릭률.</p></div>
+      </div>
+      <div class="reading-guide">
+        <strong>Behavior profile</strong>
+        전체 test set, Top 10%, Focus target을 비교해 타겟의 행동 저하 패턴을 확인했습니다.
+      </div>
+      <div class="table-wrap">{context["feature_profile_table"]}</div>
+      <div class="chart"><img alt="Focus target feature profile" src="data:image/png;base64,{context["focus_profile_chart"]}" /></div>
+    </section>
+    <section>
+      <h2>4. KMeans Cluster 결합 검증</h2>
+      <p class="section-lead">Risk group은 모델 예측확률 기반 실행 구간이고, KMeans cluster는 train 데이터에서 fit한 비지도 군집입니다. 두 기준의 결합을 통해 타겟의 행동 패턴 일관성을 검토했습니다.</p>
+      <div class="decision">
+        <strong>High risk 고객의 {context["main_cluster_share"]}가 KMeans Cluster {context["main_cluster"]}에 집중</strong>
+        모델 score가 높은 고객군이 비지도 군집에서도 같은 행동 패턴 집단으로 모여 있어, 최종 타겟 선정의 설명력이 강화됩니다.
+      </div>
+      <div class="reading-guide">
+        <strong>해석 기준</strong>
+        risk group은 캠페인 우선순위 기준, KMeans cluster는 행동 패턴 기준입니다.
+        두 기준의 정합성은 타겟 선정의 보조 근거로 활용됩니다.
+      </div>
+      <div class="grid-2">
+        <div class="table-wrap">{context["cluster_risk_table"]}</div>
+        <div class="chart"><img alt="KMeans cluster by risk group" src="data:image/png;base64,{context["cluster_risk_heatmap"]}" /></div>
+      </div>
+    </section>
+    <section>
+      <h2>5. 요금제 x 기기 인사이트</h2>
+      <p class="section-lead">Basic + Mobile 고객 구간이 크기 때문에 최종 전략은 가격 민감도와 모바일 사용 맥락을 동시에 반영해야 합니다.</p>
+      <div class="grid-3">
+        <div class="insight"><span class="eyebrow">Largest plan-device</span><b>{context["largest_plan_device"]}</b><p>상위 10% 안에서 고객 수가 가장 큰 요금제 x 기기 조합입니다.</p></div>
+        <div class="insight"><span class="eyebrow">Business implication</span><b>저가 방어</b><p>가격 민감 고객에게 완전 해지 대신 낮은 비용의 유지 선택지를 제공합니다.</p></div>
+        <div class="insight"><span class="eyebrow">Strategy link</span><b>Mobile-only</b><p>모바일 사용 맥락을 반영한 전용 저가 요금제로 연결됩니다.</p></div>
+      </div>
+      <div class="reading-guide">
+        <strong>Plan-device profile</strong>
+        요금제와 기기 조합별 규모, 이탈률, 사용 저하 지표를 함께 비교했습니다.
+      </div>
+      <div class="table-wrap">{context["plan_device_table"]}</div>
+    </section>
+    <footer>Source: outputs/churn_risk_scores_test.csv</footer>
+  </main>
+</body>
+</html>
+"""
+
+
+def render_strategy(context: dict[str, object]) -> str:
+    return f"""<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Final Retention Strategy</title>
+  <style>{css()}</style>
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="index.html">Report Home</a>
+      <a href="modeling_methodology.html">Modeling Methodology</a>
+      <a href="retention_analysis.html">Retention Analysis</a>
+      <a class="active" href="top_risk_retention_strategy.html">Final Strategy</a>
+    </nav>
+    <div class="hero">
+      <div>
+        <h1>Final Retention Strategy</h1>
+        <p class="subtitle">상위 30%는 모델 검증 범위로, 상위 10%는 실제 캠페인 실행 범위로 사용합니다. 최종 타겟은 상위 10% 중 성장기/장기 Basic 고객입니다.</p>
+      </div>
+      <div class="kpi-row">
+        <div class="kpi"><span>Focus target</span><b>{context["focus_customers"]}</b></div>
+        <div class="kpi"><span>Focus churn</span><b>{context["focus_churn"]}</b></div>
+        <div class="kpi"><span>Top 10% share</span><b>{context["focus_share"]}</b></div>
+      </div>
+    </div>
+  </header>
+  <main>
+    <section>
+      <h2>1. Target Decision</h2>
+      <div class="decision">
+        <strong>상위 10% risk 고객 중 성장기/장기 Basic 고객</strong>
+        이 구간은 {context["focus_customers"]}으로 상위 10% 고객의 {context["focus_share"]}를 차지하고, 실제 churn rate는 {context["focus_churn"]}입니다.
+        제한된 예산에서 가장 먼저 보호해야 할 고객군입니다.
+      </div>
+      <div class="grid-3">
+        <div class="evidence">
+          <span class="eyebrow">Why not Top 30%</span>
+          <strong>검증 범위와 실행 범위를 분리</strong>
+          <p>Top 30%는 이탈자의 {context["top30_captured"]}를 포착하지만, 유료 혜택 집행 범위로는 넓습니다.</p>
+        </div>
+        <div class="evidence">
+          <span class="eyebrow">Why Top 10%</span>
+          <strong>가장 높은 위험도</strong>
+          <p>Top 10%의 실제 churn rate는 {context["top10_churn"]}로, 초기 캠페인 효율을 검증하기 좋습니다.</p>
+        </div>
+        <div class="evidence">
+          <span class="eyebrow">Why Basic</span>
+          <strong>규모와 이탈률 동시 충족</strong>
+          <p>성장기/장기 Basic은 고객 수 기준 핵심 구간이며 가격 민감도 대응이 가능합니다.</p>
+        </div>
+      </div>
+    </section>
+    <section>
+      <h2>2. Business Actions</h2>
+      <div class="grid-2">
+        <div class="action">
+          <span class="eyebrow">Action 1</span>
+          <strong>중/장기 Basic 업그레이드 쿠폰</strong>
+          <p>상위 risk 고객에게만 Standard 1개월 업그레이드 쿠폰을 제공합니다. 신규 고객 확보용 프로모션을 기존 고위험 고객 retention 용도로 재해석한 전략입니다.</p>
+          <ul>
+            <li>대상: 성장기/장기 Basic 중 risk score 상위 고객</li>
+            <li>혜택: Standard 1개월 업그레이드</li>
+            <li>종료 후: 원래 요금제 복귀 또는 상위 요금제 유지 선택</li>
+          </ul>
+        </div>
+        <div class="action">
+          <span class="eyebrow">Action 2</span>
+          <strong>Mobile-only 저가 요금제</strong>
+          <p>모바일에서만 시청 가능한 저가 요금제를 신설해 가격 민감 고객의 완전 해지를 낮은 비용의 유지로 전환합니다.</p>
+          <ul>
+            <li>대상: Mobile 사용 비중이 높은 상위 risk 고객</li>
+            <li>제약: 모바일 앱 전용, 동시접속/화질/TV 이용 제한</li>
+            <li>목표: 해지 대신 저가 유지 플랜으로 전환</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+    <section>
+      <h2>3. Benchmark Logic</h2>
+      <p class="section-lead">
+        Netflix는 과거 호주와 인도에서 신규 가입자를 대상으로 30일 무료 체험 대신 한시적 요금제 업그레이드 프로모션을 운영한 사례가 있습니다.
+        본 프로젝트는 같은 업그레이드 메커니즘을 신규 유입이 아니라 기존 중/장기 Basic 고객 이탈 방지에 적용합니다.
+      </p>
+      <p class="small">
+        References:
+        <a href="https://www.techradar.com/news/netflix-has-dropped-its-30-day-free-trial-period-in-australia">TechRadar Australia case</a>,
+        <a href="https://www.gadgets360.com/entertainment/news/netflix-free-upgrade-plans-standard-premium-subscription-offer-price-india-30-days-2234597/amp">Gadgets360 India case</a>,
+        <a href="https://help.netflix.com/en/node/16282">Netflix Help Center</a>
+      </p>
+    </section>
+    <section>
+      <h2>4. Campaign Operating Rule</h2>
+      <div class="grid-3">
+        <div class="card"><span class="eyebrow">Priority</span><strong>Risk score first</strong><p>캠페인 대상 여부는 모델 ranking으로 결정합니다.</p></div>
+        <div class="card"><span class="eyebrow">Segmentation</span><strong>KMeans cluster second</strong><p>메시지와 혜택 세분화에는 KMeans cluster를 보조 기준으로 사용합니다.</p></div>
+        <div class="card"><span class="eyebrow">Budget control</span><strong>Top 10% pilot</strong><p>초기 집행은 상위 10%로 제한하고 효과 검증 후 확장합니다.</p></div>
+      </div>
+    </section>
+    <footer>Detailed evidence is available in <a href="retention_analysis.html">Retention Analysis</a>.</footer>
+  </main>
+</body>
+</html>
+"""
+
+
 def main() -> None:
-    REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    ANALYSIS_PATH.parent.mkdir(parents=True, exist_ok=True)
 
-    df = pd.read_csv(RISK_SCORE_PATH)
-    df = df.sort_values("churn_probability", ascending=False).reset_index(drop=True)
+    df = pd.read_csv(RISK_SCORE_PATH).sort_values("churn_probability", ascending=False).reset_index(drop=True)
     df = add_segments(df)
-
-    base_churn_rate = df["actual_churn"].mean()
     topk = build_topk(df)
     high = df[df["risk_group"] == "High: top 10%"].copy()
-    focus_mask = high["tenure_segment"].isin(["Growing 13-36m", "Long 37-72m"]) & (
-        high["subscription_type"] == "Basic"
-    )
-    focus = high[focus_mask].copy()
+    focus = high[
+        high["tenure_segment"].isin(["Growing 13-36m", "Long 37-72m"])
+        & (high["subscription_type"] == "Basic")
+    ].copy()
 
     high_tenure = (
         high.groupby("tenure_segment", observed=True)
@@ -211,34 +492,11 @@ def main() -> None:
             customers=("user_id", "size"),
             churn_rate=("actual_churn", "mean"),
             avg_probability=("churn_probability", "mean"),
-            avg_last_login_days=("days_since_last_login", "mean"),
-            avg_weekly_watch_minutes=("avg_watch_time_minutes_per_week", "mean"),
             basic_share=("subscription_type", lambda s: (s == "Basic").mean()),
             mobile_share=("primary_device", lambda s: (s == "Mobile").mean()),
         )
         .reset_index()
     )
-
-    high_activity = (
-        high.groupby(["tenure_segment", "activity_segment"], observed=True)
-        .agg(
-            customers=("user_id", "size"),
-            churn_rate=("actual_churn", "mean"),
-            avg_probability=("churn_probability", "mean"),
-        )
-        .reset_index()
-    )
-
-    risk_tenure = (
-        df.groupby(["risk_group", "tenure_segment"], observed=True)
-        .agg(
-            customers=("user_id", "size"),
-            churn_rate=("actual_churn", "mean"),
-            avg_probability=("churn_probability", "mean"),
-        )
-        .reset_index()
-    )
-
     tenure_subscription = (
         high.groupby(["tenure_segment", "subscription_type"], observed=True)
         .agg(
@@ -247,14 +505,47 @@ def main() -> None:
             avg_probability=("churn_probability", "mean"),
             avg_last_login_days=("days_since_last_login", "mean"),
             avg_weekly_watch_minutes=("avg_watch_time_minutes_per_week", "mean"),
-            avg_completion_rate=("completion_rate", "mean"),
-            avg_recommendation_click_rate=("recommendation_click_rate", "mean"),
         )
         .reset_index()
+        .query("customers >= 20")
+        .sort_values(["customers", "churn_rate"], ascending=[False, False])
+        .head(12)
     )
-    tenure_subscription = tenure_subscription[tenure_subscription["customers"] >= 20].sort_values(
-        ["customers", "churn_rate"], ascending=[False, False]
+    feature_cols = [
+        "days_since_last_login",
+        "avg_watch_time_minutes_per_week",
+        "watch_sessions_per_week",
+        "completion_rate",
+        "recommendation_click_rate",
+        "app_rating",
+    ]
+    profile_rows = []
+    for name, source in [("All test", df), ("Top 10%", high), ("Focus target", focus)]:
+        row = {
+            "group": name,
+            "customers": len(source),
+            "churn_rate": source["actual_churn"].mean(),
+            "basic_share": (source["subscription_type"] == "Basic").mean(),
+            "mobile_share": (source["primary_device"] == "Mobile").mean(),
+        }
+        row.update(source[feature_cols].mean().to_dict())
+        profile_rows.append(row)
+    feature_profile = pd.DataFrame(profile_rows)
+
+    cluster_risk = (
+        df.groupby(["cluster", "risk_group"], observed=True)
+        .agg(
+            customers=("user_id", "size"),
+            churn_rate=("actual_churn", "mean"),
+            avg_probability=("churn_probability", "mean"),
+            basic_share=("subscription_type", lambda s: (s == "Basic").mean()),
+            mobile_share=("primary_device", lambda s: (s == "Mobile").mean()),
+        )
+        .reset_index()
+        .sort_values(["risk_group", "customers"], ascending=[True, False])
     )
+    high_cluster_counts = cluster_risk[cluster_risk["risk_group"] == "High: top 10%"].sort_values("customers", ascending=False)
+    main_high_cluster = high_cluster_counts.iloc[0]
 
     plan_device = (
         high.groupby(["subscription_type", "primary_device"], observed=True)
@@ -265,43 +556,34 @@ def main() -> None:
             avg_weekly_watch_minutes=("avg_watch_time_minutes_per_week", "mean"),
         )
         .reset_index()
+        .query("customers >= 15")
+        .sort_values(["customers", "churn_rate"], ascending=[False, False])
+        .head(10)
     )
-    plan_device = plan_device[plan_device["customers"] >= 15].sort_values(["customers", "churn_rate"], ascending=[False, False])
 
-    profile_cols = [
-        "days_since_last_login",
-        "avg_watch_time_minutes_per_week",
-        "watch_sessions_per_week",
-        "completion_rate",
-        "recommendation_click_rate",
-        "app_rating",
-    ]
-    profile_rows = []
-    for group_name, source in [
-        ("All test", df),
-        ("Top 10%", high),
-        ("Focus target", focus),
-    ]:
-        row = {
-            "group": group_name,
-            "customers": len(source),
-            "churn_rate": source["actual_churn"].mean(),
-            "basic_share": (source["subscription_type"] == "Basic").mean(),
-            "mobile_share": (source["primary_device"] == "Mobile").mean(),
-        }
-        row.update(source[profile_cols].mean().to_dict())
-        profile_rows.append(row)
-    feature_profile = pd.DataFrame(profile_rows)
+    top10_row = topk.loc[topk["target_pct"] == 0.10].iloc[0]
+    top30_row = topk.loc[topk["target_pct"] == 0.30].iloc[0]
+    focus_share = len(focus) / len(high)
+    largest_tenure = high_tenure.sort_values("customers", ascending=False).iloc[0]
+    largest_plan_device = plan_device.sort_values("customers", ascending=False).iloc[0]
 
-    threshold = pd.read_csv(THRESHOLD_RESULT_PATH)
-    model_result = pd.read_csv(MODEL_RESULT_PATH)
-    best_model = model_result.sort_values("pr_auc", ascending=False).iloc[0]
-    selected_threshold = threshold.sort_values("f1", ascending=False).iloc[0]
+    def fmt_table(
+        source: pd.DataFrame,
+        pct_cols: list[str],
+        num_cols: list[str] | None = None,
+        highlight_terms: tuple[str, ...] = (),
+    ) -> str:
+        table = source.copy()
+        for col in pct_cols:
+            table[col] = table[col].map(pct)
+        for col in num_cols or []:
+            table[col] = table[col].map(lambda v: num(v, 1))
+        return dataframe_to_html(table, highlight_terms)
 
-    topk_display = topk.assign(
+    topk_table = topk.assign(
         target_pct=topk["target_pct"].map(lambda v: f"Top {int(v * 100)}%"),
         churn_rate=topk["churn_rate"].map(pct),
-        lift=topk["lift"].map(lambda v: num(v, 2) + "x"),
+        lift=topk["lift"].map(lambda v: f"{v:.2f}x"),
         captured_churner=topk["captured_churner"].map(pct),
     ).rename(
         columns={
@@ -312,462 +594,116 @@ def main() -> None:
             "captured_churner": "Captured churners",
         }
     )
-
-    high_tenure_display = high_tenure.assign(
-        churn_rate=high_tenure["churn_rate"].map(pct),
-        avg_probability=high_tenure["avg_probability"].map(pct),
-        avg_last_login_days=high_tenure["avg_last_login_days"].map(lambda v: num(v, 1)),
-        avg_weekly_watch_minutes=high_tenure["avg_weekly_watch_minutes"].map(lambda v: num(v, 1)),
-        basic_share=high_tenure["basic_share"].map(pct),
-        mobile_share=high_tenure["mobile_share"].map(pct),
-    ).rename(
-        columns={
-            "tenure_segment": "Tenure segment",
-            "customers": "Customers",
-            "churn_rate": "Actual churn rate",
-            "avg_probability": "Avg risk score",
-            "avg_last_login_days": "Avg days since login",
-            "avg_weekly_watch_minutes": "Avg weekly watch min",
-            "basic_share": "Basic share",
-            "mobile_share": "Mobile share",
-        }
+    high_tenure_table = fmt_table(
+        high_tenure.rename(
+            columns={
+                "tenure_segment": "Tenure segment",
+                "customers": "Customers",
+                "churn_rate": "Actual churn rate",
+                "avg_probability": "Avg risk score",
+                "basic_share": "Basic share",
+                "mobile_share": "Mobile share",
+            }
+        ),
+        ["Actual churn rate", "Avg risk score", "Basic share", "Mobile share"],
+        highlight_terms=("Growing 13-36m", "Long 37-72m"),
+    )
+    tenure_subscription_table = fmt_table(
+        tenure_subscription.rename(
+            columns={
+                "tenure_segment": "Tenure segment",
+                "subscription_type": "Plan",
+                "customers": "Customers",
+                "churn_rate": "Actual churn rate",
+                "avg_probability": "Avg risk score",
+                "avg_last_login_days": "Avg days since login",
+                "avg_weekly_watch_minutes": "Avg weekly watch min",
+            }
+        ),
+        ["Actual churn rate", "Avg risk score"],
+        ["Avg days since login", "Avg weekly watch min"],
+        highlight_terms=("Growing 13-36m|Basic", "Long 37-72m|Basic"),
+    )
+    feature_profile_table = fmt_table(
+        feature_profile.rename(
+            columns={
+                "group": "Group",
+                "customers": "Customers",
+                "churn_rate": "Actual churn rate",
+                "basic_share": "Basic share",
+                "mobile_share": "Mobile share",
+                "days_since_last_login": "Avg days since login",
+                "avg_watch_time_minutes_per_week": "Avg weekly watch min",
+                "watch_sessions_per_week": "Avg weekly sessions",
+                "completion_rate": "Avg completion",
+                "recommendation_click_rate": "Avg rec click",
+                "app_rating": "Avg app rating",
+            }
+        ),
+        ["Actual churn rate", "Basic share", "Mobile share"],
+        ["Avg days since login", "Avg weekly watch min", "Avg weekly sessions", "Avg completion", "Avg rec click", "Avg app rating"],
+        highlight_terms=("Focus target",),
+    )
+    cluster_risk_table = fmt_table(
+        cluster_risk.assign(cluster=cluster_risk["cluster"].map(lambda v: f"Cluster {v}")).rename(
+            columns={
+                "cluster": "KMeans cluster",
+                "risk_group": "Risk group",
+                "customers": "Customers",
+                "churn_rate": "Actual churn rate",
+                "avg_probability": "Avg risk score",
+                "basic_share": "Basic share",
+                "mobile_share": "Mobile share",
+            }
+        ),
+        ["Actual churn rate", "Avg risk score", "Basic share", "Mobile share"],
+        highlight_terms=("Cluster 1|High: top 10%",),
+    )
+    plan_device_table = fmt_table(
+        plan_device.rename(
+            columns={
+                "subscription_type": "Plan",
+                "primary_device": "Device",
+                "customers": "Customers",
+                "churn_rate": "Actual churn rate",
+                "avg_last_login_days": "Avg days since login",
+                "avg_weekly_watch_minutes": "Avg weekly watch min",
+            }
+        ),
+        ["Actual churn rate"],
+        ["Avg days since login", "Avg weekly watch min"],
+        highlight_terms=("Basic|Mobile",),
     )
 
-    tenure_subscription_display = tenure_subscription.head(12).assign(
-        churn_rate=tenure_subscription["churn_rate"].map(pct),
-        avg_probability=tenure_subscription["avg_probability"].map(pct),
-        avg_last_login_days=tenure_subscription["avg_last_login_days"].map(lambda v: num(v, 1)),
-        avg_weekly_watch_minutes=tenure_subscription["avg_weekly_watch_minutes"].map(lambda v: num(v, 1)),
-        avg_completion_rate=tenure_subscription["avg_completion_rate"].map(lambda v: num(v, 1)),
-        avg_recommendation_click_rate=tenure_subscription["avg_recommendation_click_rate"].map(lambda v: num(v, 1)),
-    ).rename(
-        columns={
-            "tenure_segment": "Tenure segment",
-            "subscription_type": "Plan",
-            "customers": "Customers",
-            "churn_rate": "Actual churn rate",
-            "avg_probability": "Avg risk score",
-            "avg_last_login_days": "Avg days since login",
-            "avg_weekly_watch_minutes": "Avg weekly watch min",
-            "avg_completion_rate": "Avg completion",
-            "avg_recommendation_click_rate": "Avg rec click",
-        }
-    )
+    context = {
+        "top30_captured": pct(top30_row["captured_churner"]),
+        "top10_churn": pct(top10_row["churn_rate"]),
+        "focus_customers": f"{len(focus):,}명",
+        "focus_churn": pct(focus["actual_churn"].mean()),
+        "focus_share": pct(focus_share),
+        "largest_tenure": str(largest_tenure["tenure_segment"]).replace(" 13-36m", "").replace(" 37-72m", ""),
+        "focus_login_gap": f"{focus['days_since_last_login'].mean():.1f}일",
+        "focus_watch_min": f"{focus['avg_watch_time_minutes_per_week'].mean():.1f}분",
+        "focus_rec_click": f"{focus['recommendation_click_rate'].mean():.1f}%",
+        "main_cluster": main_high_cluster["cluster"],
+        "main_cluster_share": pct(main_high_cluster["customers"] / len(high)),
+        "largest_plan_device": f"{largest_plan_device['subscription_type']} + {largest_plan_device['primary_device']}",
+        "topk_table": dataframe_to_html(topk_table, ("Top 10%", "Top 30%")),
+        "high_tenure_table": high_tenure_table,
+        "tenure_subscription_table": tenure_subscription_table,
+        "feature_profile_table": feature_profile_table,
+        "cluster_risk_table": cluster_risk_table,
+        "plan_device_table": plan_device_table,
+        "topk_chart": make_topk_chart(topk),
+        "tenure_chart": make_tenure_chart(high_tenure),
+        "focus_profile_chart": make_focus_profile_chart(feature_profile),
+        "cluster_risk_heatmap": make_cluster_risk_heatmap(cluster_risk),
+    }
 
-    plan_device_display = plan_device.head(10).assign(
-        churn_rate=plan_device["churn_rate"].map(pct),
-        avg_last_login_days=plan_device["avg_last_login_days"].map(lambda v: num(v, 1)),
-        avg_weekly_watch_minutes=plan_device["avg_weekly_watch_minutes"].map(lambda v: num(v, 1)),
-    ).rename(
-        columns={
-            "subscription_type": "Plan",
-            "primary_device": "Device",
-            "customers": "Customers",
-            "churn_rate": "Actual churn rate",
-            "avg_last_login_days": "Avg days since login",
-            "avg_weekly_watch_minutes": "Avg weekly watch min",
-        }
-    )
-
-    feature_profile_display = feature_profile.assign(
-        churn_rate=feature_profile["churn_rate"].map(pct),
-        basic_share=feature_profile["basic_share"].map(pct),
-        mobile_share=feature_profile["mobile_share"].map(pct),
-        days_since_last_login=feature_profile["days_since_last_login"].map(lambda v: num(v, 1)),
-        avg_watch_time_minutes_per_week=feature_profile["avg_watch_time_minutes_per_week"].map(lambda v: num(v, 1)),
-        watch_sessions_per_week=feature_profile["watch_sessions_per_week"].map(lambda v: num(v, 1)),
-        completion_rate=feature_profile["completion_rate"].map(lambda v: num(v, 1)),
-        recommendation_click_rate=feature_profile["recommendation_click_rate"].map(lambda v: num(v, 1)),
-        app_rating=feature_profile["app_rating"].map(lambda v: num(v, 2)),
-    ).rename(
-        columns={
-            "group": "Group",
-            "customers": "Customers",
-            "churn_rate": "Actual churn rate",
-            "basic_share": "Basic share",
-            "mobile_share": "Mobile share",
-            "days_since_last_login": "Avg days since login",
-            "avg_watch_time_minutes_per_week": "Avg weekly watch min",
-            "watch_sessions_per_week": "Avg weekly sessions",
-            "completion_rate": "Avg completion",
-            "recommendation_click_rate": "Avg rec click",
-            "app_rating": "Avg app rating",
-        }
-    )
-
-    focus_churners_share = focus["actual_churn"].sum() / high["actual_churn"].sum()
-
-    topk_chart = make_topk_chart(topk)
-    tenure_chart = make_tenure_chart(high_tenure)
-    heatmap = make_risk_tenure_heatmap(risk_tenure)
-    activity_chart = make_activity_chart(high_activity)
-    focus_profile_chart = make_focus_profile_chart(feature_profile)
-
-    html = f"""<!doctype html>
-<html lang="ko">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Top Risk Retention Strategy</title>
-  <style>
-    :root {{
-      --text: #111827;
-      --muted: #5b6472;
-      --line: #d8dee8;
-      --soft: #f6f8fb;
-      --blue: #1d4ed8;
-      --green: #15803d;
-      --red: #b91c1c;
-      --slate: #334155;
-    }}
-    * {{ box-sizing: border-box; }}
-    body {{
-      margin: 0;
-      color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      line-height: 1.55;
-      background: #ffffff;
-    }}
-    header {{
-      padding: 48px 40px 28px;
-      border-bottom: 1px solid var(--line);
-      background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
-    }}
-    nav {{
-      max-width: 1100px;
-      margin: 0 auto 24px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }}
-    nav a {{
-      color: var(--slate);
-      text-decoration: none;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 7px 12px;
-      background: #ffffff;
-      font-size: 14px;
-    }}
-    nav a.active {{
-      color: #ffffff;
-      background: var(--blue);
-      border-color: var(--blue);
-    }}
-    main {{
-      max-width: 1120px;
-      margin: 0 auto;
-      padding: 28px 28px 64px;
-    }}
-    h1 {{
-      max-width: 1100px;
-      margin: 0 auto 12px;
-      font-size: 34px;
-      line-height: 1.18;
-      letter-spacing: 0;
-    }}
-    .subtitle {{
-      max-width: 1100px;
-      margin: 0 auto;
-      color: var(--muted);
-      font-size: 16px;
-    }}
-    h2 {{
-      margin: 36px 0 14px;
-      padding-top: 8px;
-      font-size: 23px;
-      letter-spacing: 0;
-    }}
-    h3 {{
-      margin: 24px 0 8px;
-      font-size: 17px;
-    }}
-    p {{ margin: 8px 0 12px; }}
-    .metrics {{
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-      margin: 22px 0 28px;
-    }}
-    .metric {{
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 14px 14px 12px;
-      background: #ffffff;
-    }}
-    .metric .label {{
-      display: block;
-      color: var(--muted);
-      font-size: 13px;
-    }}
-    .metric .value {{
-      display: block;
-      margin-top: 5px;
-      font-size: 24px;
-      font-weight: 700;
-    }}
-    .note {{
-      border-left: 4px solid var(--blue);
-      padding: 12px 14px;
-      background: #eff6ff;
-      color: #1e3a8a;
-      margin: 16px 0 24px;
-    }}
-    .decision {{
-      border: 1px solid #fecaca;
-      border-left: 5px solid var(--red);
-      border-radius: 8px;
-      padding: 16px;
-      background: #fff7f7;
-      margin: 16px 0 24px;
-    }}
-    .decision strong {{
-      display: block;
-      margin-bottom: 6px;
-      color: #991b1b;
-      font-size: 17px;
-    }}
-    .chart {{
-      margin: 14px 0 24px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 12px;
-      background: #ffffff;
-    }}
-    .chart img {{
-      display: block;
-      width: 100%;
-      height: auto;
-    }}
-    .data-table {{
-      width: 100%;
-      border-collapse: collapse;
-      margin: 12px 0 22px;
-      font-size: 14px;
-    }}
-    .data-table th {{
-      text-align: left;
-      border-bottom: 2px solid var(--slate);
-      padding: 9px 8px;
-      white-space: nowrap;
-    }}
-    .data-table td {{
-      border-bottom: 1px solid var(--line);
-      padding: 8px;
-      vertical-align: top;
-    }}
-    .two-col {{
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
-      margin-top: 12px;
-    }}
-    .strategy {{
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 16px;
-      background: var(--soft);
-    }}
-    .strategy strong {{
-      display: block;
-      margin-bottom: 8px;
-      color: var(--slate);
-    }}
-    ul {{
-      margin: 8px 0 0;
-      padding-left: 20px;
-    }}
-    li {{ margin: 4px 0; }}
-    footer {{
-      margin-top: 42px;
-      padding-top: 18px;
-      border-top: 1px solid var(--line);
-      color: var(--muted);
-      font-size: 13px;
-    }}
-    @media (max-width: 820px) {{
-      header {{ padding: 36px 22px 24px; }}
-      main {{ padding: 24px 18px 48px; }}
-      h1 {{ font-size: 28px; }}
-      .metrics, .two-col {{ grid-template-columns: 1fr; }}
-      .data-table {{ display: block; overflow-x: auto; white-space: nowrap; }}
-    }}
-  </style>
-</head>
-<body>
-  <header>
-    <nav>
-      <a href="index.html">Report Home</a>
-      <a href="modeling_methodology.html">Modeling Methodology</a>
-      <a class="active" href="top_risk_retention_strategy.html">Retention Strategy</a>
-    </nav>
-    <h1>핵심 Top Risk 고객 집중 Retention Strategy</h1>
-    <p class="subtitle">
-      저장된 risk score 결과를 기반으로 이탈 위험 상위 고객을 다시 세분화하고,
-      모든 구간에 무차별 액션을 배정하는 대신 규모와 이탈률이 모두 큰 핵심 타겟을 선정한 리포트입니다.
-    </p>
-  </header>
-
-  <main>
-    <section>
-      <h2>1. 모델 결과 요약</h2>
-      <div class="metrics">
-        <div class="metric"><span class="label">Base churn rate</span><span class="value">{pct(base_churn_rate)}</span></div>
-        <div class="metric"><span class="label">Final model</span><span class="value">{best_model["model"]}</span></div>
-        <div class="metric"><span class="label">Best PR AUC</span><span class="value">{num(best_model["pr_auc"], 3)}</span></div>
-        <div class="metric"><span class="label">Selected threshold F1</span><span class="value">{num(selected_threshold["f1"], 3)}</span></div>
-      </div>
-      <p>
-        최종 모델은 모든 고객을 완벽히 0/1로 분류하기보다, 이탈 가능성이 높은 고객을 상위 구간에 모아
-        캠페인 우선순위를 정하는 risk ranking 모델로 해석하는 것이 적절합니다.
-      </p>
-      {dataframe_to_html(topk_display)}
-      <div class="chart"><img alt="Top-k targeting performance" src="data:image/png;base64,{topk_chart}" /></div>
-    </section>
-
-    <section>
-      <h2>2. 추가 분석 질문</h2>
-      <div class="note">
-        기존 top-k 분석은 “상위 몇 %를 타겟팅할 것인가”에 답합니다.
-        추가 분석은 “상위 위험군 안에서 어디에 먼저 예산을 쓸 것인가”에 답합니다.
-      </div>
-      <p>
-        모든 세그먼트에 맞춤형 retention을 적용하면 실행 복잡도와 쿠폰 비용이 커집니다.
-        따라서 상위 10% 고위험 고객 안에서 고객 수와 실제 이탈률을 함께 보고,
-        가장 큰 비즈니스 효과가 기대되는 핵심 구간을 우선 타겟으로 선정합니다.
-      </p>
-    </section>
-
-    <section>
-      <h2>3. 상위 10% 고객의 가입기간별 규모</h2>
-      {dataframe_to_html(high_tenure_display)}
-      <div class="chart"><img alt="High risk tenure profile" src="data:image/png;base64,{tenure_chart}" /></div>
-      <p>
-        상위 10% 안에서는 모든 가입기간 세그먼트의 실제 이탈률이 매우 높습니다.
-        다만 고객 수는 성장기와 장기 고객에 집중되어 있어, 캠페인 규모를 고려하면 이 두 집단을 먼저 검토하는 것이 합리적입니다.
-      </p>
-    </section>
-
-    <section>
-      <h2>4. 핵심 타겟 선정</h2>
-      <div class="decision">
-        <strong>선정 타겟: 상위 10% 중 성장기/장기 Basic 고객</strong>
-        이 구간은 {len(focus):,}명으로 상위 10% 고객의 {pct(len(focus) / len(high))}를 차지하고,
-        실제 churn rate는 {pct(focus["actual_churn"].mean())}입니다.
-        또한 상위 10% 내 실제 이탈자의 {pct(focus_churners_share)}를 포함하므로,
-        제한된 예산에서 가장 먼저 공략할 타겟으로 적합합니다.
-      </div>
-      <p>
-        아래 표는 상위 10% 고객을 가입기간과 요금제로 나눈 결과입니다.
-        성장기 Basic과 장기 Basic이 고객 수 기준 1, 2위이며, 두 구간 모두 87% 이상의 높은 이탈률을 보입니다.
-      </p>
-      {dataframe_to_html(tenure_subscription_display)}
-    </section>
-
-    <section>
-      <h2>5. 추가 피처 기반 타겟 검증</h2>
-      <p>
-        핵심 타겟이 단순히 “Basic이라서” 선택된 것은 아닙니다.
-        전체 고객 및 상위 10% 평균과 비교해도 최근 접속 공백, 낮은 시청시간, 낮은 완료율,
-        낮은 추천 클릭률이 함께 나타납니다.
-      </p>
-      {dataframe_to_html(feature_profile_display)}
-      <div class="chart"><img alt="Focus target feature profile" src="data:image/png;base64,{focus_profile_chart}" /></div>
-    </section>
-
-    <section>
-      <h2>6. Risk Group x Tenure</h2>
-      <div class="chart"><img alt="Risk group tenure heatmap" src="data:image/png;base64,{heatmap}" /></div>
-      <p>
-        Low risk 고객은 가입기간과 관계없이 churn rate가 낮지만, High risk 고객은 가입기간과 무관하게 높은 churn rate를 보입니다.
-        따라서 1차 우선순위는 risk score로 정하고, 2차로 규모가 큰 Basic 고객군에 액션을 집중하는 방식이 적합합니다.
-      </p>
-    </section>
-
-    <section>
-      <h2>7. 가입기간 x 최근 접속 상태</h2>
-      <div class="chart"><img alt="Tenure by activity segment" src="data:image/png;base64,{activity_chart}" /></div>
-      <p>
-        상위 10% 고객의 상당수는 31일 이상 미접속 고객입니다. 단순히 “이탈 위험이 높다”에서 끝내기보다,
-        핵심 타겟 안에서도 장기 미접속 고객을 우선순위로 두면 캠페인 실행 대상을 더 좁힐 수 있습니다.
-      </p>
-    </section>
-
-    <section>
-      <h2>8. 요금제 x 기기 보조 인사이트</h2>
-      <p>
-        요금제와 기기를 함께 보면 Basic + Mobile 고객이 가장 큰 구간입니다.
-        따라서 핵심 타겟 캠페인은 가격 민감도뿐 아니라 모바일 사용 맥락까지 반영하는 편이 좋습니다.
-      </p>
-      {dataframe_to_html(plan_device_display)}
-    </section>
-
-    <section>
-      <h2>9. 핵심 타겟 전용 Retention Action</h2>
-      <p>
-        이번 리포트의 제안은 모든 고위험 구간에 서로 다른 캠페인을 배정하는 것이 아니라,
-        규모가 가장 큰 성장기/장기 Basic 고객에게 먼저 예산을 집중하는 것입니다.
-      </p>
-      <div class="two-col">
-        <div class="strategy">
-          <strong>1순위: Basic 유지 혜택</strong>
-          <p>가격 민감 고객의 즉시 해지를 방어하는 액션입니다.</p>
-          <ul>
-            <li>한시적 유지 할인</li>
-            <li>Basic Plus 체험 제안</li>
-            <li>Standard 업그레이드 1개월 무료 체험</li>
-          </ul>
-        </div>
-        <div class="strategy">
-          <strong>2순위: 모바일 재활성화</strong>
-          <p>Basic 고객 중 Mobile 사용 비중이 높기 때문에 앱 복귀를 유도합니다.</p>
-          <ul>
-            <li>모바일 중심 고객에게 짧은 콘텐츠 큐레이션</li>
-            <li>최근 인기 콘텐츠 푸시</li>
-            <li>이어보기 기반 복귀 알림</li>
-          </ul>
-        </div>
-        <div class="strategy">
-          <strong>3순위: 추천 반응 회복</strong>
-          <p>추천 클릭률과 완료율이 낮아 콘텐츠 발견 실패 가능성이 있습니다.</p>
-          <ul>
-            <li>최근 선호 장르 재탐색</li>
-            <li>신작/인기작 중심 추천</li>
-            <li>완주율 높은 짧은 콘텐츠 추천</li>
-          </ul>
-        </div>
-        <div class="strategy">
-          <strong>후순위: 소규모 구간 A/B 테스트</strong>
-          <p>신규/초장기 구간은 위험도는 높지만 규모가 작아 별도 검증 대상으로 둡니다.</p>
-          <ul>
-            <li>신규 고객 온보딩 개선 실험</li>
-            <li>초장기 고객 win-back 테스트</li>
-            <li>표본 확장 후 별도 캠페인 판단</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <h2>10. 발표용 결론</h2>
-      <p>
-        모델은 이탈 위험 상위 10% 고객의 실제 churn rate를 {pct(topk.loc[topk["target_pct"] == 0.10, "churn_rate"].iloc[0])}까지
-        끌어올려 캠페인 우선순위화에 유효했습니다. 추가 분석에서는 상위 위험군 전체에 무차별적으로 액션을 배정하지 않고,
-        규모와 이탈률을 함께 고려해 성장기/장기 Basic 고객을 핵심 타겟으로 선정했습니다.
-        이 구간은 상위 10% 고객의 {pct(len(focus) / len(high))}를 차지하고 실제 이탈률도 {pct(focus["actual_churn"].mean())}로 높아,
-        Basic 유지 혜택과 모바일 재활성화 캠페인을 우선 적용하는 전략이 가장 실무적입니다.
-      </p>
-    </section>
-
-    <footer>
-      Source files: outputs/churn_risk_scores_test.csv, outputs/churn_model_final_result.csv, outputs/churn_threshold_result.csv
-    </footer>
-  </main>
-</body>
-</html>
-"""
-    REPORT_PATH.write_text(html, encoding="utf-8")
-    print(REPORT_PATH)
+    ANALYSIS_PATH.write_text(render_analysis(context), encoding="utf-8")
+    STRATEGY_PATH.write_text(render_strategy(context), encoding="utf-8")
+    print(ANALYSIS_PATH)
+    print(STRATEGY_PATH)
 
 
 if __name__ == "__main__":

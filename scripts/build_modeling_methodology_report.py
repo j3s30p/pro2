@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import os
+import re
 from io import BytesIO
 from pathlib import Path
 
@@ -35,8 +36,30 @@ def fig_to_base64(fig: plt.Figure) -> str:
     return base64.b64encode(buf.getvalue()).decode("ascii")
 
 
-def dataframe_to_html(df: pd.DataFrame, classes: str = "data-table") -> str:
-    return df.to_html(index=False, classes=classes, border=0, escape=False)
+def dataframe_to_html(
+    df: pd.DataFrame,
+    classes: str = "data-table",
+    highlight_terms: tuple[str, ...] = (),
+) -> str:
+    html = df.to_html(index=False, classes=classes, border=0, escape=False)
+    if not highlight_terms:
+        return html
+
+    def mark_row(match: re.Match[str]) -> str:
+        row_html = match.group(0)
+        should_highlight = False
+        for term in highlight_terms:
+            if "|" in term:
+                should_highlight = all(part in row_html for part in term.split("|"))
+            else:
+                should_highlight = term in row_html
+            if should_highlight:
+                break
+        if should_highlight:
+            return row_html.replace("<tr>", '<tr class="highlight-row">', 1)
+        return row_html
+
+    return re.sub(r"<tr>\s*(?:<td>.*?</td>\s*)+</tr>", mark_row, html, flags=re.S)
 
 
 def make_model_chart(model_result: pd.DataFrame) -> str:
@@ -99,7 +122,7 @@ def build_index() -> None:
     main { max-width: 980px; margin: 0 auto; padding: 56px 24px; }
     h1 { font-size: 34px; margin: 0 0 12px; letter-spacing: 0; }
     p { color: #5b6472; line-height: 1.6; }
-    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 28px; }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 28px; }
     a.card { display: block; color: inherit; text-decoration: none; background: white; border: 1px solid #d8dee8; border-radius: 8px; padding: 22px; }
     a.card:hover { border-color: #2563eb; }
     .label { color: #2563eb; font-size: 13px; font-weight: 700; text-transform: uppercase; }
@@ -111,8 +134,7 @@ def build_index() -> None:
   <main>
     <h1>Netflix Churn Analysis Reports</h1>
     <p>
-      모델링 흐름과 비즈니스 액션을 분리한 HTML 리포트입니다.
-      첫 번째 페이지는 피처/모델/평가지표 선택 근거를, 두 번째 페이지는 상위 risk 고객의 집중 캠페인 전략을 설명합니다.
+      모델링 방법론, 리텐션 타겟 분석, 최종 비즈니스 전략을 분리한 발표용 HTML 리포트입니다.
     </p>
     <div class="grid">
       <a class="card" href="modeling_methodology.html">
@@ -120,10 +142,15 @@ def build_index() -> None:
         <h2>Modeling Methodology</h2>
         <p>피처 선택, 피처 엔지니어링 실험, 모델 후보 비교, PR AUC와 recall 중심 평가 이유.</p>
       </a>
+      <a class="card" href="retention_analysis.html">
+        <span class="label">Evidence</span>
+        <h2>Retention Analysis</h2>
+        <p>Top-k ranking, 가입기간/요금제/기기 세분화, KMeans cluster 결합 검증.</p>
+      </a>
       <a class="card" href="top_risk_retention_strategy.html">
-        <span class="label">Business Insight</span>
-        <h2>Retention Strategy</h2>
-        <p>상위 10% risk 고객 중 성장기/장기 Basic 고객을 핵심 타겟으로 선정한 캠페인 전략.</p>
+        <span class="label">Final Proposal</span>
+        <h2>Final Strategy</h2>
+        <p>Mobile-only 저가 요금제와 중/장기 Basic 업그레이드 쿠폰 중심의 최종 리텐션 제안.</p>
       </a>
     </div>
   </main>
@@ -351,7 +378,7 @@ def main() -> None:
     }}
     * {{ box-sizing: border-box; }}
     body {{ margin: 0; color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.55; background: #ffffff; }}
-    header {{ padding: 48px 40px 28px; border-bottom: 1px solid var(--line); background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%); }}
+    header {{ padding: 42px 40px 30px; border-bottom: 1px solid var(--line); background: #f7f9fc; }}
     nav {{ max-width: 1100px; margin: 0 auto 24px; display: flex; flex-wrap: wrap; gap: 10px; }}
     nav a {{ color: var(--slate); text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; background: #ffffff; font-size: 14px; }}
     nav a.active {{ color: #ffffff; background: var(--blue); border-color: var(--blue); }}
@@ -369,11 +396,16 @@ def main() -> None:
     .chart {{ margin: 14px 0 24px; border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: #ffffff; }}
     .chart img {{ display: block; width: 100%; height: auto; }}
     .data-table {{ width: 100%; border-collapse: collapse; margin: 12px 0 22px; font-size: 14px; }}
-    .data-table th {{ text-align: left; border-bottom: 2px solid var(--slate); padding: 9px 8px; white-space: nowrap; }}
+    .data-table th {{ text-align: left; border-bottom: 2px solid var(--slate); padding: 9px 8px; white-space: nowrap; background: #fbfcfe; }}
     .data-table td {{ border-bottom: 1px solid var(--line); padding: 8px; vertical-align: top; }}
+    .data-table tr.highlight-row td {{ background: #fff7ed; font-weight: 650; }}
+    .data-table tbody tr:hover td {{ background: #f8fafc; }}
     .two-col {{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 12px; }}
     .box {{ border: 1px solid var(--line); border-radius: 8px; padding: 16px; background: var(--soft); }}
     .box strong {{ display: block; margin-bottom: 8px; color: var(--slate); }}
+    .flow {{ display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 18px 0 24px; }}
+    .flow .box {{ background: #ffffff; }}
+    .flow span {{ display: block; color: var(--muted); font-size: 13px; font-weight: 700; }}
     ul {{ margin: 8px 0 0; padding-left: 20px; }}
     li {{ margin: 4px 0; }}
     footer {{ margin-top: 42px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }}
@@ -381,7 +413,7 @@ def main() -> None:
       header {{ padding: 36px 22px 24px; }}
       main {{ padding: 24px 18px 48px; }}
       h1 {{ font-size: 28px; }}
-      .metrics, .two-col {{ grid-template-columns: 1fr; }}
+      .metrics, .two-col, .flow {{ grid-template-columns: 1fr; }}
       .data-table {{ display: block; overflow-x: auto; white-space: nowrap; }}
     }}
   </style>
@@ -391,15 +423,37 @@ def main() -> None:
     <nav>
       <a href="index.html">Report Home</a>
       <a class="active" href="modeling_methodology.html">Modeling Methodology</a>
-      <a href="top_risk_retention_strategy.html">Retention Strategy</a>
+      <a href="retention_analysis.html">Retention Analysis</a>
+      <a href="top_risk_retention_strategy.html">Final Strategy</a>
     </nav>
     <h1>Churn Modeling & Feature Engineering Methodology</h1>
     <p class="subtitle">
-      어떤 피처를 선택했고, 왜 피처 엔지니어링을 했으며, 최종적으로 왜 원본 피처 기반 risk score를 유지했는지 설명하는 방법론 리포트입니다.
+      어떤 피처를 선택했고, 왜 피처 엔지니어링을 했으며, 최종적으로 왜 원본 피처 기반 risk score를 유지했는지 설명하는 분석 과정 페이지입니다.
     </p>
   </header>
 
   <main>
+    <section>
+      <h2>Executive Summary</h2>
+      <div class="flow">
+        <div class="box">
+          <span>Modeling goal</span>
+          <strong>정확도보다 risk ranking</strong>
+          <p>이탈 고객을 상위 위험 구간에 모아 캠페인 우선순위를 정하는 것이 핵심 목표입니다.</p>
+        </div>
+        <div class="box">
+          <span>Feature decision</span>
+          <strong>원본 피처 기반 최종 모델</strong>
+          <p>파생 피처와 논문 기반 피처는 해석력은 높였지만 PR AUC와 top-k 성능을 개선하지 못했습니다.</p>
+        </div>
+        <div class="box">
+          <span>Next page</span>
+          <strong>Retention Analysis로 연결</strong>
+          <p>이 페이지의 산출물인 risk score를 다음 페이지에서 실제 고객 타겟 분석으로 전환합니다.</p>
+        </div>
+      </div>
+    </section>
+
     <section>
       <h2>1. 문제 정의와 평가 기준</h2>
       <div class="metrics">
@@ -454,7 +508,7 @@ def main() -> None:
         ratio, engagement score, risk flag, categorical interaction, leakage-safe behavior feature, compact feature,
         논문 기반 paper feature를 실험했습니다.
       </p>
-      {dataframe_to_html(feature_display)}
+      {dataframe_to_html(feature_display, highlight_terms=("Original Stacking", "Paper-Based FE"))}
       <div class="chart"><img alt="Feature engineering experiment comparison" src="data:image/png;base64,{feature_chart}" /></div>
       <p>
         결론은 “파생변수가 무의미하다”가 아니라, 현재 합성 데이터에서는 원본 피처가 이미 강한 신호를 담고 있어
@@ -470,19 +524,19 @@ def main() -> None:
         구독 피로감, 몰아보기/콘텐츠 고갈 proxy를 만들었습니다.
         직접 관측되지 않는 개념은 현재 데이터의 사용량, 요금제, 추천 클릭률, 완료율, 최근 접속일로 대체 표현했습니다.
       </p>
-      {dataframe_to_html(paper_feature_map)}
+      {dataframe_to_html(paper_feature_map, highlight_terms=("가격 부담", "추천 시스템", "구독 피로감"))}
       <p>
         성능 비교 결과, 논문 기반 피처는 최종 모델 성능을 끌어올리지는 못했습니다.
         가장 좋은 `paper_fe` 후보는 precision은 높였지만 recall이 낮아졌고, F1/ROC AUC/PR AUC는 original보다 근소하게 낮았습니다.
       </p>
-      {dataframe_to_html(paper_result_display)}
+      {dataframe_to_html(paper_result_display, highlight_terms=("Original", "Paper FE"))}
       <div class="note">
         `paper_fe`의 의미는 성능 개선보다 해석력입니다.
         RFM 위험, 서비스 필요성 저하, 전환 위험, 추천/완료 반응 저하 같은 개념을 수치화해
         “왜 이 고객이 위험한가”를 설명하는 보조 진단 피처로 활용할 수 있습니다.
       </div>
       <h3>참고한 논문</h3>
-      {dataframe_to_html(article_refs)}
+      {dataframe_to_html(article_refs, highlight_terms=("DBpia", "eArticle"))}
     </section>
 
     <section>
@@ -492,7 +546,7 @@ def main() -> None:
         Logistic Regression, Random Forest, LightGBM, XGBoost, CatBoost를 비교했고,
         이후 GridSearchCV/RandomizedSearchCV, Soft Voting, Stacking을 실험했습니다.
       </p>
-      {dataframe_to_html(model_display)}
+      {dataframe_to_html(model_display, highlight_terms=(str(best_model["model"]),))}
       <div class="chart"><img alt="Model performance comparison" src="data:image/png;base64,{model_chart}" /></div>
       <p>
         Stacking이 PR AUC 기준 가장 높았지만, Logistic Regression 대비 개선 폭은 약 0.001 수준으로 작았습니다.
@@ -506,7 +560,7 @@ def main() -> None:
         threshold 0.5는 기본값일 뿐이고, 캠페인 운영 목적에 맞는 최적 기준이 아닐 수 있습니다.
         threshold를 올리면 precision은 올라가지만 recall은 낮아지고, threshold를 낮추면 더 많은 이탈자를 잡지만 오탐이 많아집니다.
       </p>
-      {dataframe_to_html(threshold_display)}
+      {dataframe_to_html(threshold_display, highlight_terms=("F1-balanced threshold",))}
       <div class="chart"><img alt="Threshold precision recall f1 curve" src="data:image/png;base64,{threshold_chart}" /></div>
       <p>
         최종 운영 관점에서는 하나의 threshold로 모든 의사결정을 끝내기보다,
@@ -522,7 +576,8 @@ def main() -> None:
       <p>
         모델 성능은 이미 합성 데이터에서 높은 수준에 도달했기 때문에, 추가 성능 개선보다 중요한 것은
         risk ranking 결과를 어떻게 캠페인 우선순위와 맞춤형 retention 전략으로 번역하느냐입니다.
-        이 결론은 별도 비즈니스 리포트인 Retention Strategy 페이지에서 이어집니다.
+        이 결론은 <a href="retention_analysis.html">Retention Analysis</a>에서 실제 데이터 기반 타겟 검증으로 이어지고,
+        마지막으로 <a href="top_risk_retention_strategy.html">Final Strategy</a>에서 비즈니스 액션으로 정리됩니다.
       </p>
     </section>
 

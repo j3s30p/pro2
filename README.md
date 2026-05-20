@@ -146,7 +146,7 @@ uv run jupyter lab
 
 - `reports/index.html`
   - 리포트 목차 페이지
-  - 모델링 방법론과 비즈니스 인사이트 페이지로 이동
+  - 모델링 방법론, 리텐션 분석, 최종 전략 페이지로 이동
 
 - `reports/modeling_methodology.html`
   - 피처 선택 기준
@@ -156,10 +156,15 @@ uv run jupyter lab
   - threshold와 ranking을 분리해 해석한 이유
 
 - `reports/top_risk_retention_strategy.html`
+  - 발표용 최종 리텐션 전략
+  - Mobile-only 저가 요금제와 중/장기 Basic 업그레이드 쿠폰 제안
+
+- `reports/retention_analysis.html`
   - top-k targeting 결과
   - 상위 10% risk 고객 세분화
   - 성장기/장기 Basic 고객을 핵심 타겟으로 선정한 근거
-  - 핵심 타겟 전용 retention action 제안
+  - KMeans cluster와 risk group 결합 검증
+  - 실제 데이터 표와 그래프 기반 분석 근거
 
 HTML 리포트 재생성:
 
@@ -204,6 +209,10 @@ Feature engineering 실험 결과:
 
 추가 HTML 리포트에서는 모든 고위험 구간에 무차별적으로 맞춤형 retention을 적용하기보다, 상위 10% 고객 안에서 규모와 이탈률이 모두 큰 **성장기/장기 Basic 고객**을 핵심 타겟으로 선정했습니다.
 
+상위 30% risk 고객이 전체 이탈자의 약 82.0%를 포함한다는 점은 모델의 ranking 성능을 보여주는 근거로 해석했습니다. 다만 실제 캠페인은 쿠폰 비용, 메시지 피로도, 운영 복잡도가 발생하므로 상위 30% 전체를 바로 타겟팅하지 않고, 실제 churn rate가 약 87.6%로 가장 높은 상위 10%를 1차 실행 대상으로 설정했습니다.
+
+또한 risk group은 모델 예측확률 기반 실행 우선순위이고, KMeans cluster는 `05` 노트북에서 train 데이터로만 직접 fit한 비지도 고객 군집입니다. 두 결과를 결합한 결과 High risk 고객 대부분이 특정 KMeans cluster에 집중되어, risk score 기반 타겟이 행동 패턴 측면에서도 일관된 고객군임을 확인했습니다.
+
 핵심 타겟 요약:
 
 - 상위 10% risk 고객 중 성장기/장기 Basic 고객: 586명
@@ -211,7 +220,9 @@ Feature engineering 실험 결과:
 - 실제 churn rate: 약 88.6%
 - 상위 10% 내 실제 이탈자의 약 59.2% 포함
 
-따라서 우선 액션은 Basic 유지 혜택, Basic Plus 또는 Standard 체험 제안, 모바일 재활성화 메시지, 짧은 콘텐츠 큐레이션처럼 비용과 실행 복잡도를 통제할 수 있는 캠페인이 적절합니다.
+따라서 우선 액션은 두 가지로 정리할 수 있습니다. 첫째, Mobile 사용 비중이 높은 가격 민감 고객에게는 모바일에서만 사용할 수 있지만 더 저렴한 **Mobile-only 요금제**를 제안해 완전 해지를 저가 유지로 전환합니다. 둘째, 성장기/장기 Basic 고객 중 risk score가 높은 고객에게만 **Standard 업그레이드 1개월 쿠폰**을 제공해 상위 요금제 가치를 체험하게 합니다.
+
+이 업그레이드 쿠폰은 신규 고객 확보용 무료 체험권이 아니라, 과거 Netflix가 일부 국가에서 신규 가입자 대상으로 운영했던 한시적 요금제 업그레이드 프로모션 방식을 기존 고위험 고객 retention 전략으로 재해석한 것입니다.
 
 ## Notes Before Running
 

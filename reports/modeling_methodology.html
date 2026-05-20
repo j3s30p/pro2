@@ -17,7 +17,7 @@
     }
     * { box-sizing: border-box; }
     body { margin: 0; color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; line-height: 1.55; background: #ffffff; }
-    header { padding: 48px 40px 28px; border-bottom: 1px solid var(--line); background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%); }
+    header { padding: 42px 40px 30px; border-bottom: 1px solid var(--line); background: #f7f9fc; }
     nav { max-width: 1100px; margin: 0 auto 24px; display: flex; flex-wrap: wrap; gap: 10px; }
     nav a { color: var(--slate); text-decoration: none; border: 1px solid var(--line); border-radius: 999px; padding: 7px 12px; background: #ffffff; font-size: 14px; }
     nav a.active { color: #ffffff; background: var(--blue); border-color: var(--blue); }
@@ -35,11 +35,16 @@
     .chart { margin: 14px 0 24px; border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: #ffffff; }
     .chart img { display: block; width: 100%; height: auto; }
     .data-table { width: 100%; border-collapse: collapse; margin: 12px 0 22px; font-size: 14px; }
-    .data-table th { text-align: left; border-bottom: 2px solid var(--slate); padding: 9px 8px; white-space: nowrap; }
+    .data-table th { text-align: left; border-bottom: 2px solid var(--slate); padding: 9px 8px; white-space: nowrap; background: #fbfcfe; }
     .data-table td { border-bottom: 1px solid var(--line); padding: 8px; vertical-align: top; }
+    .data-table tr.highlight-row td { background: #fff7ed; font-weight: 650; }
+    .data-table tbody tr:hover td { background: #f8fafc; }
     .two-col { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 12px; }
     .box { border: 1px solid var(--line); border-radius: 8px; padding: 16px; background: var(--soft); }
     .box strong { display: block; margin-bottom: 8px; color: var(--slate); }
+    .flow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 18px 0 24px; }
+    .flow .box { background: #ffffff; }
+    .flow span { display: block; color: var(--muted); font-size: 13px; font-weight: 700; }
     ul { margin: 8px 0 0; padding-left: 20px; }
     li { margin: 4px 0; }
     footer { margin-top: 42px; padding-top: 18px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
@@ -47,7 +52,7 @@
       header { padding: 36px 22px 24px; }
       main { padding: 24px 18px 48px; }
       h1 { font-size: 28px; }
-      .metrics, .two-col { grid-template-columns: 1fr; }
+      .metrics, .two-col, .flow { grid-template-columns: 1fr; }
       .data-table { display: block; overflow-x: auto; white-space: nowrap; }
     }
   </style>
@@ -57,15 +62,37 @@
     <nav>
       <a href="index.html">Report Home</a>
       <a class="active" href="modeling_methodology.html">Modeling Methodology</a>
-      <a href="top_risk_retention_strategy.html">Retention Strategy</a>
+      <a href="retention_analysis.html">Retention Analysis</a>
+      <a href="top_risk_retention_strategy.html">Final Strategy</a>
     </nav>
     <h1>Churn Modeling & Feature Engineering Methodology</h1>
     <p class="subtitle">
-      어떤 피처를 선택했고, 왜 피처 엔지니어링을 했으며, 최종적으로 왜 원본 피처 기반 risk score를 유지했는지 설명하는 방법론 리포트입니다.
+      어떤 피처를 선택했고, 왜 피처 엔지니어링을 했으며, 최종적으로 왜 원본 피처 기반 risk score를 유지했는지 설명하는 분석 과정 페이지입니다.
     </p>
   </header>
 
   <main>
+    <section>
+      <h2>Executive Summary</h2>
+      <div class="flow">
+        <div class="box">
+          <span>Modeling goal</span>
+          <strong>정확도보다 risk ranking</strong>
+          <p>이탈 고객을 상위 위험 구간에 모아 캠페인 우선순위를 정하는 것이 핵심 목표입니다.</p>
+        </div>
+        <div class="box">
+          <span>Feature decision</span>
+          <strong>원본 피처 기반 최종 모델</strong>
+          <p>파생 피처와 논문 기반 피처는 해석력은 높였지만 PR AUC와 top-k 성능을 개선하지 못했습니다.</p>
+        </div>
+        <div class="box">
+          <span>Next page</span>
+          <strong>Retention Analysis로 연결</strong>
+          <p>이 페이지의 산출물인 risk score를 다음 페이지에서 실제 고객 타겟 분석으로 전환합니다.</p>
+        </div>
+      </div>
+    </section>
+
     <section>
       <h2>1. 문제 정의와 평가 기준</h2>
       <div class="metrics">
@@ -132,7 +159,7 @@
     </tr>
   </thead>
   <tbody>
-    <tr>
+    <tr class="highlight-row">
       <td>Original Stacking</td>
       <td>18</td>
       <td>0.764</td>
@@ -156,7 +183,7 @@
       <td>85.8%</td>
       <td>모델 입력보다 사후 해석용으로 활용</td>
     </tr>
-    <tr>
+    <tr class="highlight-row">
       <td>Paper-Based FE</td>
       <td>45</td>
       <td>0.754</td>
@@ -198,12 +225,12 @@
     </tr>
   </thead>
   <tbody>
-    <tr>
+    <tr class="highlight-row">
       <td>가격 부담 / 가격 대비 가치</td>
       <td>watch_time_per_plan, sessions_per_plan, value_for_money_score, price_burden_proxy</td>
       <td>가격 대비 가치 계열은 해석에는 유용했지만, 최종 성능은 original보다 낮음</td>
     </tr>
-    <tr>
+    <tr class="highlight-row">
       <td>추천 시스템 / 개인화 불만족</td>
       <td>recommendation_effectiveness, recommendation_mismatch, personalization_risk</td>
       <td>추천 효과와 개인화 위험은 churn 방향 진단에 활용 가능</td>
@@ -213,7 +240,7 @@
       <td>switching_risk_proxy, service_dependency_score, low_service_need</td>
       <td>low_service_need와 switching_risk_proxy가 churn 방향과 잘 맞음</td>
     </tr>
-    <tr>
+    <tr class="highlight-row">
       <td>구독 피로감</td>
       <td>subscription_fatigue_proxy, usage_per_account_age</td>
       <td>장기 가입 + 최근 저활동 패턴을 설명하는 보조 신호로 적합</td>
@@ -242,7 +269,7 @@
     </tr>
   </thead>
   <tbody>
-    <tr>
+    <tr class="highlight-row">
       <td>Original</td>
       <td>LogisticRegression__original</td>
       <td>0.687</td>
@@ -251,7 +278,7 @@
       <td>0.904</td>
       <td>0.755</td>
     </tr>
-    <tr>
+    <tr class="highlight-row">
       <td>Paper FE</td>
       <td>LogisticRegression__paper_fe</td>
       <td>0.686</td>
@@ -277,17 +304,17 @@
     </tr>
   </thead>
   <tbody>
-    <tr>
+    <tr class="highlight-row">
       <td>OTT 서비스의 이용자는 왜 구독을 해지하는가?</td>
       <td><a href="https://www.dbpia.co.kr/journal/articleDetail?nodeId=NODE11396704">DBpia</a></td>
       <td>습관적 이용 인식, 서비스 불만족, 구독료 부담, 몰아보기/콘텐츠 고갈 가설</td>
     </tr>
-    <tr>
+    <tr class="highlight-row">
       <td>구독 피로감과 가격 민감도가 OTT 서비스의 구독 해지 의도에 미치는 영향</td>
       <td><a href="https://www.dbpia.co.kr/journal/articleDetail?nodeId=NODE12538822">DBpia</a></td>
       <td>구독 피로감, 가격 민감도, UX 조절 효과 가설</td>
     </tr>
-    <tr>
+    <tr class="highlight-row">
       <td>OTT 플랫폼 유형에 따른 구독 해지 결정요인 분석</td>
       <td><a href="https://www.earticle.net/Article/A478290">eArticle</a></td>
       <td>글로벌 SVOD의 비용 부담, 추천 알고리즘 불만족, 플랫폼 유형별 해지 요인 가설</td>
@@ -317,7 +344,7 @@
     </tr>
   </thead>
   <tbody>
-    <tr>
+    <tr class="highlight-row">
       <td>Stacking</td>
       <td>0.50</td>
       <td>83.4%</td>
@@ -400,7 +427,7 @@
       <td>82.0%</td>
       <td>0.674</td>
     </tr>
-    <tr>
+    <tr class="highlight-row">
       <td>F1-balanced threshold</td>
       <td>0.66</td>
       <td>64.3%</td>
@@ -424,7 +451,8 @@
       <p>
         모델 성능은 이미 합성 데이터에서 높은 수준에 도달했기 때문에, 추가 성능 개선보다 중요한 것은
         risk ranking 결과를 어떻게 캠페인 우선순위와 맞춤형 retention 전략으로 번역하느냐입니다.
-        이 결론은 별도 비즈니스 리포트인 Retention Strategy 페이지에서 이어집니다.
+        이 결론은 <a href="retention_analysis.html">Retention Analysis</a>에서 실제 데이터 기반 타겟 검증으로 이어지고,
+        마지막으로 <a href="top_risk_retention_strategy.html">Final Strategy</a>에서 비즈니스 액션으로 정리됩니다.
       </p>
     </section>
 
