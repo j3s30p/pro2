@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Netflix Churn Analysis Reports</title>
+  <style>
+    body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #111827; background: #f8fafc; }
+    main { max-width: 980px; margin: 0 auto; padding: 56px 24px; }
+    h1 { font-size: 34px; margin: 0 0 12px; letter-spacing: 0; }
+    p { color: #5b6472; line-height: 1.6; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 28px; }
+    a.card { display: block; color: inherit; text-decoration: none; background: white; border: 1px solid #d8dee8; border-radius: 8px; padding: 22px; }
+    a.card:hover { border-color: #2563eb; }
+    .label { color: #2563eb; font-size: 13px; font-weight: 700; text-transform: uppercase; }
+    h2 { margin: 8px 0; font-size: 22px; }
+    @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Netflix Churn Analysis Reports</h1>
+    <p>
+      모델링 흐름과 비즈니스 액션을 분리한 HTML 리포트입니다.
+      첫 번째 페이지는 피처/모델/평가지표 선택 근거를, 두 번째 페이지는 상위 risk 고객의 집중 캠페인 전략을 설명합니다.
+    </p>
+    <div class="grid">
+      <a class="card" href="modeling_methodology.html">
+        <span class="label">Analysis Process</span>
+        <h2>Modeling Methodology</h2>
+        <p>피처 선택, 피처 엔지니어링 실험, 모델 후보 비교, PR AUC와 recall 중심 평가 이유.</p>
+      </a>
+      <a class="card" href="top_risk_retention_strategy.html">
+        <span class="label">Business Insight</span>
+        <h2>Retention Strategy</h2>
+        <p>상위 10% risk 고객 중 성장기/장기 Basic 고객을 핵심 타겟으로 선정한 캠페인 전략.</p>
+      </a>
+    </div>
+  </main>
+</body>
+</html>

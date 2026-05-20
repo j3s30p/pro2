@@ -1,0 +1,12 @@
+{
+  "final_model_name": "Stacking_original_features",
+  "selected_threshold": 0.66,
+  "target_col": "churned",
+  "test_size": 0.2,
+  "random_state": 42,
+  "feature_policy": "original_features_only",
+  "model_path": "../models/final_churn_stacking_pipeline.joblib",
+  "risk_score_path": "../outputs/final_churn_risk_scores_test.csv",
+  "eval_path": "../outputs/final_churn_model_eval.csv",
+  "top_k_path": "../outputs/final_churn_topk_metrics.csv"
+}
