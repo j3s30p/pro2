@@ -26,16 +26,16 @@ Netflix-style user behavior 데이터를 활용해 고객 이탈을 예측하고
 EDA -> Clustering -> Modeling -> Risk Ranking -> Retention Strategy -> KKBOX Validation
 ```
 
-## Team
+## Team 추노
 
-**팀명: 추노**
-
-| 이름 | GitHub | 담당 영역 |
-| --- | --- | --- |
-| 박제섭 | [j3s30p](https://github.com/j3s30p) | 팀장, Netflix churn modeling, 논문 기반 feature engineering, GitHub Pages 시각화 |
-| 김진남 | [hikago](https://github.com/hikago) | 부팀장, Netflix churn modeling, KKBOX real-data validation |
-| 장규원 | [gyuwon02](https://github.com/gyuwon02) | Netflix churn modeling, background research, KMeans clustering |
-| 김동휘 | [star9906](https://github.com/star9906) | Netflix churn modeling, 논문 기반 feature engineering |
+<table>
+  <tr>
+    <td align="center" width="200"><a href="https://github.com/j3s30p"><img src="https://github.com/j3s30p.png" width="100" height="100" alt="박제섭"/><br/><b>박제섭</b></a><br/><sub>팀장</sub><br/><sub>Netflix churn modeling<br/>논문 기반 feature engineering<br/>GitHub Pages 시각화</sub></td>
+    <td align="center" width="200"><a href="https://github.com/hikago"><img src="https://github.com/hikago.png" width="100" height="100" alt="김진남"/><br/><b>김진남</b></a><br/><sub>부팀장</sub><br/><sub>Netflix churn modeling<br/>KKBOX real-data validation</sub></td>
+    <td align="center" width="200"><a href="https://github.com/gyuwon02"><img src="https://github.com/gyuwon02.png" width="100" height="100" alt="장규원"/><br/><b>장규원</b></a><br/><sub>팀원</sub><br/><sub>Netflix churn modeling<br/>background research<br/>KMeans clustering</sub></td>
+    <td align="center" width="200"><a href="https://github.com/star9906"><img src="https://github.com/star9906.png" width="100" height="100" alt="김동휘"/><br/><b>김동휘</b></a><br/><sub>팀원</sub><br/><sub>Netflix churn modeling<br/>논문 기반 feature engineering</sub></td>
+  </tr>
+</table>
 
 공통으로 데이터 EDA, 모델 결과 해석, 비즈니스 인사이트 정리에 참여했습니다.
 
