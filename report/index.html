@@ -7,7 +7,8 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <nav class="nav">
+    <a href="#main" class="skip-to-content">본문으로 건너뛰기</a>
+    <nav class="nav" role="navigation" aria-label="주 메뉴">
         <div class="nav-inner">
             <div class="nav-logo"><svg viewBox="0 0 18 24" width="18" height="24"><path d="M0 0h4.5v24H0z" fill="#E50914"/><path d="M13.5 0h4.5v24h-4.5z" fill="#E50914"/><path d="M0 0h4.5l13.5 24h-4.5z" fill="#E50914"/></svg>Churn Prediction</div>
             <ul class="nav-links">
@@ -19,10 +20,13 @@
                 <li><a href="results.html">Results</a></li>
                 <li><a href="business_insight.html">Business Insight</a></li>
             </ul>
+            <button class="nav-toggle" aria-label="메뉴 열기" aria-expanded="false" onclick="this.classList.toggle('open');this.previousElementSibling.classList.toggle('open');this.setAttribute('aria-expanded',this.classList.contains('open'))">
+                <span></span><span></span><span></span>
+            </button>
         </div>
     </nav>
 
-    <div class="container">
+    <div id="main" class="container">
         <div class="hero">
             <h1>Netflix 고객 이탈 예측 프로젝트</h1>
             <p>50,000명의 사용자 행동 데이터를 기반으로 이탈 고객을 예측하고, 리텐션 캠페인 전략을 수립합니다.</p>
@@ -57,33 +61,33 @@
         <div class="card">
             <div class="pipeline">
                 <div class="pipeline-step active">
-                    <div style="font-size:1.5rem; margin-bottom:0.5rem;">🔍</div>
-                    <div style="font-weight:600; font-size:0.85rem;">EDA</div>
-                    <div style="font-size:0.7rem; color:var(--text-muted);">탐색적 분석</div>
+                    <div class="text-3xl mb-sm">🔍</div>
+                    <div class="font-semibold text-base">EDA</div>
+                    <div class="text-xs text-muted">탐색적 분석</div>
                 </div>
                 <div class="pipeline-arrow">→</div>
                 <div class="pipeline-step active">
-                    <div style="font-size:1.5rem; margin-bottom:0.5rem;">🎯</div>
-                    <div style="font-weight:600; font-size:0.85rem;">Clustering</div>
-                    <div style="font-size:0.7rem; color:var(--text-muted);">고객 군집화</div>
+                    <div class="text-3xl mb-sm">🎯</div>
+                    <div class="font-semibold text-base">Clustering</div>
+                    <div class="text-xs text-muted">고객 군집화</div>
                 </div>
                 <div class="pipeline-arrow">→</div>
                 <div class="pipeline-step active">
-                    <div style="font-size:1.5rem; margin-bottom:0.5rem;">⚙️</div>
-                    <div style="font-weight:600; font-size:0.85rem;">Feature Eng.</div>
-                    <div style="font-size:0.7rem; color:var(--text-muted);">피처 실험</div>
+                    <div class="text-3xl mb-sm">⚙️</div>
+                    <div class="font-semibold text-base">Feature Eng.</div>
+                    <div class="text-xs text-muted">피처 실험</div>
                 </div>
                 <div class="pipeline-arrow">→</div>
                 <div class="pipeline-step active">
-                    <div style="font-size:1.5rem; margin-bottom:0.5rem;">🤖</div>
-                    <div style="font-weight:600; font-size:0.85rem;">Modeling</div>
-                    <div style="font-size:0.7rem; color:var(--text-muted);">모델 학습/튜닝</div>
+                    <div class="text-3xl mb-sm">🤖</div>
+                    <div class="font-semibold text-base">Modeling</div>
+                    <div class="text-xs text-muted">모델 학습/튜닝</div>
                 </div>
                 <div class="pipeline-arrow">→</div>
                 <div class="pipeline-step active">
-                    <div style="font-size:1.5rem; margin-bottom:0.5rem;">📊</div>
-                    <div style="font-weight:600; font-size:0.85rem;">Results</div>
-                    <div style="font-size:0.7rem; color:var(--text-muted);">결과 및 전략</div>
+                    <div class="text-3xl mb-sm">📊</div>
+                    <div class="font-semibold text-base">Results</div>
+                    <div class="text-xs text-muted">결과 및 전략</div>
                 </div>
             </div>
         </div>
@@ -96,14 +100,14 @@
         </div>
 
         <div class="grid-2">
-            <a href="eda.html" style="text-decoration:none;">
+            <a href="eda.html" class="card-link">
                 <div class="card">
-                    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+                    <div class="flex items-center gap-base mb-base">
                         <span class="section-number">1</span>
                         <h3 style="margin:0;">탐색적 데이터 분석</h3>
                     </div>
                     <p>50,000명의 고객 데이터에서 이탈과 관련된 핵심 변수를 탐색합니다. days_since_last_login이 가장 강한 이탈 신호임을 확인했습니다.</p>
-                    <div style="margin-top:1rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+                    <div class="flex flex-wrap gap-sm mt-base">
                         <span class="badge badge-primary">수치형 10개</span>
                         <span class="badge badge-primary">범주형 8개</span>
                         <span class="badge badge-success">결측치 없음</span>
@@ -111,14 +115,14 @@
                 </div>
             </a>
 
-            <a href="clustering.html" style="text-decoration:none;">
+            <a href="clustering.html" class="card-link">
                 <div class="card">
-                    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+                    <div class="flex items-center gap-base mb-base">
                         <span class="section-number">2</span>
                         <h3 style="margin:0;">고객 군집화</h3>
                     </div>
                     <p>StandardScaler + KMeans(k=3)로 고객을 고위험 이탈군, 일반 유지군, 핵심 충성군으로 분류합니다.</p>
-                    <div style="margin-top:1rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+                    <div class="flex flex-wrap gap-sm mt-base">
                         <span class="badge badge-danger">고위험 54.6%</span>
                         <span class="badge badge-warning">일반 9.5%</span>
                         <span class="badge badge-success">충성 2.3%</span>
@@ -126,14 +130,14 @@
                 </div>
             </a>
 
-            <a href="feature_engineering.html" style="text-decoration:none;">
+            <a href="feature_engineering.html" class="card-link">
                 <div class="card">
-                    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+                    <div class="flex items-center gap-base mb-base">
                         <span class="section-number">3</span>
                         <h3 style="margin:0;">피처 엔지니어링</h3>
                     </div>
                     <p>행동 flag, 논문 기반 proxy 등 다양한 파생변수를 실험했으나, 원본 피처가 가장 우수한 성능을 보였습니다.</p>
-                    <div style="margin-top:1rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+                    <div class="flex flex-wrap gap-sm mt-base">
                         <span class="badge badge-warning">고정 임계값: -0.0004</span>
                         <span class="badge badge-warning">논문 기반: -0.0015</span>
                         <span class="badge badge-success">원본 채택</span>
@@ -141,14 +145,14 @@
                 </div>
             </a>
 
-            <a href="modeling.html" style="text-decoration:none;">
+            <a href="modeling.html" class="card-link">
                 <div class="card">
-                    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+                    <div class="flex items-center gap-base mb-base">
                         <span class="section-number">4</span>
                         <h3 style="margin:0;">모델링</h3>
                     </div>
                     <p>Logistic Regression이 강한 기준선을 만들고, Stacking 앙상블이 PR AUC 0.764로 최종 선정됩니다.</p>
-                    <div style="margin-top:1rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+                    <div class="flex flex-wrap gap-sm mt-base">
                         <span class="badge badge-primary">Stacking</span>
                         <span class="badge badge-primary">Threshold 0.66</span>
                         <span class="badge badge-success">F1 0.694</span>
@@ -156,14 +160,14 @@
                 </div>
             </a>
 
-            <a href="results.html" style="text-decoration:none;">
+            <a href="results.html" class="card-link">
                 <div class="card">
-                    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+                    <div class="flex items-center gap-base mb-base">
                         <span class="section-number">5</span>
                         <h3 style="margin:0;">모델 예측 결과</h3>
                     </div>
                     <p>상위 10% 타겟팅으로 전체 이탈자의 41.85%를 포착합니다. Risk Group 분류와 KMeans 교차 검증으로 타겟 신뢰성을 확인합니다.</p>
-                    <div style="margin-top:1rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+                    <div class="flex flex-wrap gap-sm mt-base">
                         <span class="badge badge-danger">High Risk: 87.6%</span>
                         <span class="badge badge-warning">Medium: 42.05%</span>
                         <span class="badge badge-success">Low: 5.4%</span>
@@ -171,14 +175,14 @@
                 </div>
             </a>
 
-            <a href="business_insight.html" style="text-decoration:none;">
+            <a href="business_insight.html" class="card-link">
                 <div class="card" style="background: linear-gradient(135deg, rgba(229, 9, 20, 0.08), rgba(236, 72, 153, 0.05));">
-                    <div style="display:flex; align-items:center; gap:1rem; margin-bottom:1rem;">
+                    <div class="flex items-center gap-base mb-base">
                         <span class="section-number">6</span>
                         <h3 style="margin:0;">Business Insight</h3>
                     </div>
                     <p>고위험 고객 프로파일에서 도출한 리텐션 전략과 캠페인 실행 계획. KKBOX 실제 데이터로 파이프라인 검증까지.</p>
-                    <div style="margin-top:1rem; display:flex; gap:0.5rem; flex-wrap:wrap;">
+                    <div class="flex flex-wrap gap-sm mt-base">
                         <span class="badge badge-primary">업그레이드 쿠폰</span>
                         <span class="badge badge-primary">Mobile-only 요금제</span>
                         <span class="badge badge-success">KKBOX 검증</span>
@@ -196,16 +200,16 @@
 
         <div class="grid-3">
             <div class="card" style="border-top: 3px solid var(--accent-red);">
-                <h3 style="color:var(--accent-red);">이탈의 핵심 신호</h3>
-                <p style="margin-top:0.75rem;">최근 로그인 공백(days_since_last_login)이 가장 강한 이탈 예측 변수입니다. 상관계수 0.498로 압도적 1위.</p>
+                <h3 class="text-red">이탈의 핵심 신호</h3>
+                <p class="mt-md">최근 로그인 공백(days_since_last_login)이 가장 강한 이탈 예측 변수입니다. 상관계수 0.498로 압도적 1위.</p>
             </div>
             <div class="card" style="border-top: 3px solid var(--accent-orange);">
-                <h3 style="color:var(--accent-orange);">Basic 요금제 위험</h3>
-                <p style="margin-top:0.75rem;">Basic 고객 이탈률 34.4%로 Premium(6.7%)의 5배. 요금제가 이탈의 강력한 구분자입니다.</p>
+                <h3 class="text-orange">Basic 요금제 위험</h3>
+                <p class="mt-md">Basic 고객 이탈률 34.4%로 Premium(6.7%)의 5배. 요금제가 이탈의 강력한 구분자입니다.</p>
             </div>
             <div class="card" style="border-top: 3px solid var(--accent-green);">
-                <h3 style="color:var(--accent-green);">모델의 실용 가치</h3>
-                <p style="margin-top:0.75rem;">상위 20% 고객만 타겟팅해도 전체 이탈자의 67.85% 포착. 캠페인 비용 효율 극대화.</p>
+                <h3 class="text-green">모델의 실용 가치</h3>
+                <p class="mt-md">상위 20% 고객만 타겟팅해도 전체 이탈자의 67.85% 포착. 캠페인 비용 효율 극대화.</p>
             </div>
         </div>
 

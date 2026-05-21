@@ -7,7 +7,8 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <nav class="nav">
+    <a href="#main" class="skip-to-content">본문으로 건너뛰기</a>
+    <nav class="nav" role="navigation" aria-label="주 메뉴">
         <div class="nav-inner">
             <div class="nav-logo"><svg viewBox="0 0 18 24" width="18" height="24"><path d="M0 0h4.5v24H0z" fill="#E50914"/><path d="M13.5 0h4.5v24h-4.5z" fill="#E50914"/><path d="M0 0h4.5l13.5 24h-4.5z" fill="#E50914"/></svg>Churn Prediction</div>
             <ul class="nav-links">
@@ -19,10 +20,13 @@
                 <li><a href="results.html">Results</a></li>
                 <li><a href="business_insight.html">Business Insight</a></li>
             </ul>
+            <button class="nav-toggle" aria-label="메뉴 열기" aria-expanded="false" onclick="this.classList.toggle('open');this.previousElementSibling.classList.toggle('open');this.setAttribute('aria-expanded',this.classList.contains('open'))">
+                <span></span><span></span><span></span>
+            </button>
         </div>
     </nav>
 
-    <div class="container">
+    <div class="container" id="main">
         <div class="hero">
             <h1>피처 엔지니어링 실험</h1>
             <p>다양한 파생변수를 실험했으나, 원본 피처가 가장 우수한 성능을 보였습니다</p>
@@ -253,21 +257,21 @@
             </div>
 
             <div style="margin-top:1.5rem; display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem;">
-                <div style="text-align:center; padding:1rem; background:rgba(239,68,68,0.05); border-radius:8px;">
-                    <div style="font-size:1.25rem; font-weight:800; color:var(--accent-red);">-0.0004</div>
-                    <div style="font-size:0.75rem; color:var(--text-muted);">PR AUC 변화</div>
+                <div class="metric-box negative">
+                    <div class="metric-val">-0.0004</div>
+                    <div class="metric-desc">PR AUC 변화</div>
                 </div>
-                <div style="text-align:center; padding:1rem; background:rgba(239,68,68,0.05); border-radius:8px;">
-                    <div style="font-size:1.25rem; font-weight:800; color:var(--accent-red);">-0.0004</div>
-                    <div style="font-size:0.75rem; color:var(--text-muted);">ROC AUC 변화</div>
+                <div class="metric-box negative">
+                    <div class="metric-val">-0.0004</div>
+                    <div class="metric-desc">ROC AUC 변화</div>
                 </div>
-                <div style="text-align:center; padding:1rem; background:rgba(239,68,68,0.05); border-radius:8px;">
-                    <div style="font-size:1.25rem; font-weight:800; color:var(--accent-red);">-0.0005</div>
-                    <div style="font-size:0.75rem; color:var(--text-muted);">F1 변화</div>
+                <div class="metric-box negative">
+                    <div class="metric-val">-0.0005</div>
+                    <div class="metric-desc">F1 변화</div>
                 </div>
-                <div style="text-align:center; padding:1rem; background:rgba(16,185,129,0.05); border-radius:8px;">
-                    <div style="font-size:1.25rem; font-weight:800; color:var(--accent-green);">+0.0124</div>
-                    <div style="font-size:0.75rem; color:var(--text-muted);">Recall 변화</div>
+                <div class="metric-box positive">
+                    <div class="metric-val">+0.0124</div>
+                    <div class="metric-desc">Recall 변화</div>
                 </div>
             </div>
         </div>
@@ -430,21 +434,21 @@
             </div>
 
             <div style="margin-top:1.5rem; display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem;">
-                <div style="text-align:center; padding:1rem; background:rgba(239,68,68,0.05); border-radius:8px;">
-                    <div style="font-size:1.25rem; font-weight:800; color:var(--accent-red);">3/4</div>
-                    <div style="font-size:0.75rem; color:var(--text-muted);">모델 성능 하락</div>
+                <div class="metric-box negative">
+                    <div class="metric-val">3/4</div>
+                    <div class="metric-desc">모델 성능 하락</div>
                 </div>
-                <div style="text-align:center; padding:1rem; background:rgba(239,68,68,0.05); border-radius:8px;">
-                    <div style="font-size:1.25rem; font-weight:800; color:var(--accent-red);">4/4</div>
-                    <div style="font-size:0.75rem; color:var(--text-muted);">Top 10% 정밀도 하락</div>
+                <div class="metric-box negative">
+                    <div class="metric-val">4/4</div>
+                    <div class="metric-desc">Top 10% 정밀도 하락</div>
                 </div>
-                <div style="text-align:center; padding:1rem; background:rgba(239,68,68,0.05); border-radius:8px;">
-                    <div style="font-size:1.25rem; font-weight:800; color:var(--accent-red);">-0.012</div>
-                    <div style="font-size:0.75rem; color:var(--text-muted);">최대 하락 (RF)</div>
+                <div class="metric-box negative">
+                    <div class="metric-val">-0.012</div>
+                    <div class="metric-desc">최대 하락 (RF)</div>
                 </div>
-                <div style="text-align:center; padding:1rem; background:rgba(16,185,129,0.05); border-radius:8px;">
-                    <div style="font-size:1.25rem; font-weight:800; color:var(--accent-green);">+0.0007</div>
-                    <div style="font-size:0.75rem; color:var(--text-muted);">유일한 개선 (GB)</div>
+                <div class="metric-box positive">
+                    <div class="metric-val">+0.0007</div>
+                    <div class="metric-desc">유일한 개선 (GB)</div>
                 </div>
             </div>
         </div>
@@ -499,7 +503,7 @@
                     <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">출처: DBpia</p>
                 </div>
                 <div style="padding:0.75rem 1rem; background:rgba(245,158,11,0.03); border-radius:6px;">
-                    <a href="https://www-earticle-net.ap2.proxy.openathens.net/Article/A478290" target="_blank" style="font-size:0.85rem; font-weight:600; color:var(--text-light); text-decoration:none; border-bottom:1px dashed var(--text-muted);">OTT 플랫폼 유형에 따른 구독 해지 결정요인 분석: 전략적 포지셔닝을 위한 함의</a>
+                    <a href="https://www.kci.go.kr/kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART003293403" target="_blank" style="font-size:0.85rem; font-weight:600; color:var(--text-light); text-decoration:none; border-bottom:1px dashed var(--text-muted);">OTT 플랫폼 유형에 따른 구독 해지 결정요인 분석: 전략적 포지셔닝을 위한 함의</a>
                     <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">출처: e-Article</p>
                 </div>
             </div>
@@ -789,21 +793,21 @@
 
         <div class="card" style="background:linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(6, 182, 212, 0.05)); border:1px solid rgba(16, 185, 129, 0.2);">
             <h3 style="color:var(--accent-green);">최종 판단: 원본 피처 18개 채택</h3>
-            <div style="margin-top:1.5rem; display:grid; gap:1.25rem;">
-                <div style="display:flex; align-items:flex-start; gap:1rem;">
-                    <span style="color:var(--accent-green); font-size:1.1rem;">✓</span>
+            <div class="bullet-list mt-lg">
+                <div class="bullet-item">
+                    <span class="text-xl text-green">✓</span>
                     <p>Stacking 모델이 원본 수치형/범주형 피처에서 이미 이탈 패턴을 충분히 학습하고 있었습니다.</p>
                 </div>
-                <div style="display:flex; align-items:flex-start; gap:1rem;">
-                    <span style="color:var(--accent-green); font-size:1.1rem;">✓</span>
+                <div class="bullet-item">
+                    <span class="text-xl text-green">✓</span>
                     <p>파생변수 대부분이 기존 강한 변수(days_since_last_login, 시청량, 완료율)의 변형으로, 중복 신호가 많았습니다.</p>
                 </div>
-                <div style="display:flex; align-items:flex-start; gap:1rem;">
-                    <span style="color:var(--accent-green); font-size:1.1rem;">✓</span>
+                <div class="bullet-item">
+                    <span class="text-xl text-green">✓</span>
                     <p>논문 기반 피처는 해석력은 좋았지만 (RFM 위험, 서비스 의존도 등 churn 방향성 일치), 예측 성능 개선에는 기여하지 못했습니다.</p>
                 </div>
-                <div style="display:flex; align-items:flex-start; gap:1rem;">
-                    <span style="color:var(--accent-green); font-size:1.1rem;">✓</span>
+                <div class="bullet-item">
+                    <span class="text-xl text-green">✓</span>
                     <p>이 결과는 "복잡한 파생변수를 추가한다고 항상 좋아지는 것은 아니다"는 중요한 실험적 교훈입니다.</p>
                 </div>
             </div>

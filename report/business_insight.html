@@ -7,7 +7,8 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <nav class="nav">
+    <a href="#main" class="skip-to-content">본문으로 건너뛰기</a>
+    <nav class="nav" role="navigation" aria-label="주 메뉴">
         <div class="nav-inner">
             <div class="nav-logo"><svg viewBox="0 0 18 24" width="18" height="24"><path d="M0 0h4.5v24H0z" fill="#E50914"/><path d="M13.5 0h4.5v24h-4.5z" fill="#E50914"/><path d="M0 0h4.5l13.5 24h-4.5z" fill="#E50914"/></svg>Churn Prediction</div>
             <ul class="nav-links">
@@ -19,10 +20,13 @@
                 <li><a href="results.html">Results</a></li>
                 <li><a href="business_insight.html" class="active">Business Insight</a></li>
             </ul>
+            <button class="nav-toggle" aria-label="메뉴 열기" aria-expanded="false" onclick="this.classList.toggle('open');this.previousElementSibling.classList.toggle('open');this.setAttribute('aria-expanded',this.classList.contains('open'))">
+                <span></span><span></span><span></span>
+            </button>
         </div>
     </nav>
 
-    <div class="container">
+    <div class="container" id="main">
         <div class="hero">
             <h1>이탈 방지 전략 & 실행 계획</h1>
             <p>어떻게 잡을 것인가 — 데이터 기반 리텐션 캠페인 설계</p>
@@ -33,6 +37,7 @@
             <a href="#action-matrix">Campaign Action Matrix</a>
             <a href="#budget">예산별 타겟팅</a>
             <a href="#principles">캠페인 운영 원칙</a>
+            <a href="#abtest">A/B 테스트 설계</a>
             <a href="#kkbox">KKBOX 검증</a>
             <a href="#final">최종 결론</a>
         </div>
@@ -336,9 +341,85 @@
 
         <div class="divider"></div>
 
+        <!-- A/B Test Design -->
+        <div class="section-header" id="abtest">
+            <h2>5. A/B 테스트 설계</h2>
+            <p>제안된 리텐션 전략의 효과를 과학적으로 측정하기 위한 실험 설계</p>
+        </div>
+
+        <div class="card" style="border-left:4px solid var(--accent);">
+            <h3>실험 개요</h3>
+            <p class="text-md text-secondary mt-md mb-lg">상위 10% 고위험 고객(1,000명)을 대상으로 두 전략의 이탈 방지 효과를 검증합니다. 무작위 배정(RCT)으로 전략 효과와 자연 유지율을 분리합니다.</p>
+
+            <div class="ab-split">
+                <div class="ab-group" style="background:rgba(245,158,11,0.05); border-color:rgba(245,158,11,0.2);">
+                    <div class="flex items-center gap-md mb-base">
+                        <div class="icon-circle" style="background:rgba(245,158,11,0.2);">A</div>
+                        <div>
+                            <h3 style="margin:0; font-size:1rem; color:var(--accent-orange);">Treatment A</h3>
+                            <p class="text-xs text-muted">Standard 업그레이드 쿠폰</p>
+                        </div>
+                    </div>
+                    <div class="grid gap-sm">
+                        <div class="list-row"><span>대상</span><strong class="text-primary">Basic 고객 ~350명</strong></div>
+                        <div class="list-row"><span>혜택</span><strong class="text-primary">Standard 1개월 무료</strong></div>
+                        <div class="list-row"><span>관찰 기간</span><strong class="text-primary">쿠폰 종료 후 60일</strong></div>
+                        <div class="list-row" style="border-bottom:none;"><span>핵심 KPI</span><strong class="text-orange">30/60일 retention rate</strong></div>
+                    </div>
+                </div>
+
+                <div class="ab-divider">vs</div>
+
+                <div class="ab-group" style="background:rgba(6,182,212,0.05); border-color:rgba(6,182,212,0.2);">
+                    <div class="flex items-center gap-md mb-base">
+                        <div class="icon-circle" style="background:rgba(6,182,212,0.2);">B</div>
+                        <div>
+                            <h3 style="margin:0; font-size:1rem; color:var(--accent);">Treatment B</h3>
+                            <p class="text-xs text-muted">Mobile-only 저가 요금제 제안</p>
+                        </div>
+                    </div>
+                    <div class="grid gap-sm">
+                        <div class="list-row"><span>대상</span><strong class="text-primary">Mobile 고객 ~350명</strong></div>
+                        <div class="list-row"><span>혜택</span><strong class="text-primary">저가 Mobile 전용 플랜</strong></div>
+                        <div class="list-row"><span>관찰 기간</span><strong class="text-primary">전환 후 90일</strong></div>
+                        <div class="list-row" style="border-bottom:none;"><span>핵심 KPI</span><strong class="text-cyan">전환율 + ARPU 변화</strong></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-3" style="margin-top:1.5rem;">
+            <div class="card" style="border-top:3px solid var(--text-muted); text-align:center;">
+                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-bottom:0.75rem;">CONTROL</div>
+                <h3 style="font-size:1.1rem; margin-bottom:0.75rem;">대조군 (~300명)</h3>
+                <p class="text-base text-secondary">아무 개입 없이<br>자연 이탈률을 측정합니다.<br>Treatment 효과의 기준선.</p>
+            </div>
+            <div class="card" style="border-top:3px solid var(--accent-green); text-align:center;">
+                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-bottom:0.75rem;">SUCCESS CRITERIA</div>
+                <h3 style="font-size:1.1rem; margin-bottom:0.75rem;">성공 기준</h3>
+                <p class="text-base text-secondary">Treatment 그룹의<br><strong>30일 retention rate</strong>이<br>대조군 대비 <strong>10%p 이상</strong> 높으면 성공.</p>
+            </div>
+            <div class="card" style="border-top:3px solid var(--accent-orange); text-align:center;">
+                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-bottom:0.75rem;">GUARDRAIL</div>
+                <h3 style="font-size:1.1rem; margin-bottom:0.75rem;">가드레일 지표</h3>
+                <p class="text-base text-secondary">쿠폰 종료 후<br><strong>다운그레이드 불만 티켓</strong><br>증가율이 5% 미만이어야 지속.</p>
+            </div>
+        </div>
+
+        <div class="callout callout-info" style="margin-top:1.5rem;">
+            <p><strong>측정 지표 정리:</strong></p>
+            <ul style="margin-top:0.5rem; padding-left:1.25rem; font-size:0.9rem; color:var(--text-secondary); list-style-type:disc;">
+                <li style="margin-bottom:0.35rem;"><strong class="text-primary">Primary</strong> — 30일 / 60일 retention rate (Treatment vs Control)</li>
+                <li style="margin-bottom:0.35rem;"><strong class="text-primary">Secondary</strong> — 시청 시간 변화, 로그인 빈도 변화, 요금제 전환율</li>
+                <li><strong class="text-primary">Guardrail</strong> — CS 티켓 증가율, ARPU 순변화, 다운그레이드 후 재이탈률</li>
+            </ul>
+        </div>
+
+        <div class="divider"></div>
+
         <!-- Real Data Validation -->
         <div class="section-header" id="kkbox">
-            <h2>5. 실제 데이터 검증: KKBOX</h2>
+            <h2>6. 실제 데이터 검증: KKBOX</h2>
             <p>동일한 Stacking 파이프라인을 실제 구독 서비스 데이터에 적용한 결과</p>
         </div>
 
@@ -382,21 +463,21 @@
             </div>
 
             <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem; margin-bottom:1.5rem;">
-                <div style="text-align:center; padding:1rem; background:rgba(16,185,129,0.06); border-radius:8px;">
-                    <div style="font-size:1.5rem; font-weight:800; color:var(--accent-green);">+0.082</div>
-                    <div style="font-size:0.75rem; color:var(--text-muted);">ROC AUC 상승</div>
+                <div class="metric-box positive">
+                    <div class="metric-val" style="font-size:1.5rem;">+0.082</div>
+                    <div class="metric-desc">ROC AUC 상승</div>
                 </div>
-                <div style="text-align:center; padding:1rem; background:rgba(16,185,129,0.06); border-radius:8px;">
-                    <div style="font-size:1.5rem; font-weight:800; color:var(--accent-green);">+0.162</div>
-                    <div style="font-size:0.75rem; color:var(--text-muted);">F1 Score 상승</div>
+                <div class="metric-box positive">
+                    <div class="metric-val" style="font-size:1.5rem;">+0.162</div>
+                    <div class="metric-desc">F1 Score 상승</div>
                 </div>
-                <div style="text-align:center; padding:1rem; background:rgba(16,185,129,0.06); border-radius:8px;">
-                    <div style="font-size:1.5rem; font-weight:800; color:var(--accent-green);">+0.113</div>
-                    <div style="font-size:0.75rem; color:var(--text-muted);">Precision 상승</div>
+                <div class="metric-box positive">
+                    <div class="metric-val" style="font-size:1.5rem;">+0.113</div>
+                    <div class="metric-desc">Precision 상승</div>
                 </div>
-                <div style="text-align:center; padding:1rem; background:rgba(16,185,129,0.06); border-radius:8px;">
-                    <div style="font-size:1.5rem; font-weight:800; color:var(--accent-green);">+0.213</div>
-                    <div style="font-size:0.75rem; color:var(--text-muted);">Recall 상승</div>
+                <div class="metric-box positive">
+                    <div class="metric-val" style="font-size:1.5rem;">+0.213</div>
+                    <div class="metric-desc">Recall 상승</div>
                 </div>
             </div>
         </div>
@@ -409,7 +490,7 @@
 
         <!-- Final Summary -->
         <div class="section-header" id="final">
-            <h2>6. 프로젝트 최종 결론</h2>
+            <h2>7. 프로젝트 최종 결론</h2>
         </div>
 
         <div class="card" style="background: linear-gradient(135deg, rgba(229, 9, 20, 0.1), rgba(236, 72, 153, 0.06)); border:1px solid rgba(229,9,20,0.2);">
