@@ -28,12 +28,16 @@ EDA -> Clustering -> Modeling -> Risk Ranking -> Retention Strategy -> KKBOX Val
 
 ## Team
 
-| 이름 | GitHub | 역할 |
+**팀명: 추노**
+
+| 이름 | GitHub | 담당 영역 |
 | --- | --- | --- |
-| 박제섭 | [j3s30p](https://github.com/j3s30p) | 넷플릭스 ML, 팀장 |
-| 김진남 | [hikago](https://github.com/hikago) | KKBOX ML, 부팀장 |
-| 장규원 | [gyuwon02](https://github.com/gyuwon02) | 비지도학습 클러스터링, 데이터 EDA |
-| 김동휘 | [star9906](https://github.com/star9906) | 논문 기반 피처 엔지니어링, 데이터 전처리 |
+| 박제섭 | [j3s30p](https://github.com/j3s30p) | 팀장, Netflix churn modeling, 논문 기반 feature engineering |
+| 김진남 | [hikago](https://github.com/hikago) | 부팀장, Netflix churn modeling, KKBOX real-data validation |
+| 장규원 | [gyuwon02](https://github.com/gyuwon02) | Netflix churn modeling, background research, KMeans clustering |
+| 김동휘 | [star9906](https://github.com/star9906) | Netflix churn modeling, 논문 기반 feature engineering, preprocessing |
+
+공통으로 데이터 EDA, 모델 결과 해석, 비즈니스 인사이트 정리에 참여했습니다.
 
 ## Project Goal
 
