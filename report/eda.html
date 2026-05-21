@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EDA - Netflix Churn Prediction</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-inner">
+            <div class="nav-logo">Netflix Churn Prediction</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Overview</a></li>
+                <li><a href="eda.html" class="active">EDA</a></li>
+                <li><a href="clustering.html">Clustering</a></li>
+                <li><a href="feature_engineering.html">Feature Engineering</a></li>
+                <li><a href="modeling.html">Modeling</a></li>
+                <li><a href="results.html">Results</a></li>
+                <li><a href="business_insight.html">Business Insight</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="hero">
+            <h1>탐색적 데이터 분석 (EDA)</h1>
+            <p>50,000명의 Netflix 사용자 행동 데이터에서 이탈 패턴을 탐색합니다</p>
+        </div>
+
+        <!-- Dataset Overview -->
+        <div class="section-header">
+            <h2><span class="section-number">1</span>데이터셋 개요</h2>
+            <p>결측치 없는 깨끗한 데이터 50,000건, 20개 컬럼</p>
+        </div>
+
+        <div class="grid-4 spacer">
+            <div class="stat-card">
+                <div class="stat-value gradient-1">50,000</div>
+                <div class="stat-label">총 레코드</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value gradient-2">0</div>
+                <div class="stat-label">결측치</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value gradient-1">10</div>
+                <div class="stat-label">수치형 피처</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value gradient-1">8</div>
+                <div class="stat-label">범주형 피처</div>
+            </div>
+        </div>
+
+        <!-- Target Distribution -->
+        <div class="section-header">
+            <h2><span class="section-number">2</span>타겟 분포</h2>
+            <p>이탈 클래스 비율 약 21%로, 극단적 불균형은 아니지만 accuracy 중심 평가는 부적절</p>
+        </div>
+
+        <div class="card">
+            <div class="donut-container">
+                <div class="donut" style="background: conic-gradient(var(--accent-red) 0% 21%, var(--accent-green) 21% 100%);">
+                    <div class="donut-center">
+                        <div class="value" style="color:var(--accent-red);">21.0%</div>
+                        <div class="label">이탈률</div>
+                    </div>
+                </div>
+                <div>
+                    <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:1rem;">
+                        <div style="width:16px; height:16px; border-radius:4px; background:var(--accent-green);"></div>
+                        <span style="color:var(--text-secondary);">유지 고객: <strong style="color:var(--text-primary);">39,500명 (79.0%)</strong></span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:0.75rem;">
+                        <div style="width:16px; height:16px; border-radius:4px; background:var(--accent-red);"></div>
+                        <span style="color:var(--text-secondary);">이탈 고객: <strong style="color:var(--text-primary);">10,500명 (21.0%)</strong></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="spacer-lg"></div>
+
+        <!-- Correlation with Target -->
+        <div class="section-header">
+            <h2><span class="section-number">3</span>이탈과의 상관관계</h2>
+            <p>수치형 변수와 churned 간의 Pearson 상관계수</p>
+        </div>
+
+        <div class="card">
+            <div class="bar-chart">
+                <div class="bar-item">
+                    <div class="bar-label">days_since_last_login</div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:100%; background:var(--gradient-3);">+0.498</div>
+                    </div>
+                    <div class="bar-value" style="color:var(--accent-red);">+0.498</div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">avg_watch_time</div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:63%; background:var(--gradient-2);">-0.316</div>
+                    </div>
+                    <div class="bar-value" style="color:var(--accent-green);">-0.316</div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">completion_rate</div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:61%; background:var(--gradient-2);">-0.304</div>
+                    </div>
+                    <div class="bar-value" style="color:var(--accent-green);">-0.304</div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">recommendation_click</div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:54%; background:var(--gradient-2);">-0.271</div>
+                    </div>
+                    <div class="bar-value" style="color:var(--accent-green);">-0.271</div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">watch_sessions/week</div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:52%; background:var(--gradient-2);">-0.260</div>
+                    </div>
+                    <div class="bar-value" style="color:var(--accent-green);">-0.260</div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">app_rating</div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:50%; background:var(--gradient-2);">-0.252</div>
+                    </div>
+                    <div class="bar-value" style="color:var(--accent-green);">-0.252</div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">avg_rating_given</div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:50%; background:var(--gradient-2);">-0.249</div>
+                    </div>
+                    <div class="bar-value" style="color:var(--accent-green);">-0.249</div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">session_count</div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:40%; background:linear-gradient(90deg, var(--accent), var(--accent-green));">-0.198</div>
+                    </div>
+                    <div class="bar-value" style="color:var(--accent-green);">-0.198</div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">account_age_months</div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:31%; background:linear-gradient(90deg, var(--accent), var(--accent-green));">-0.154</div>
+                    </div>
+                    <div class="bar-value" style="color:var(--accent-green);">-0.154</div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">age</div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:15%; background:linear-gradient(90deg, var(--text-muted), var(--accent));">-0.076</div>
+                    </div>
+                    <div class="bar-value" style="color:var(--text-muted);">-0.076</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="callout callout-info">
+            <p><strong>핵심 인사이트:</strong> days_since_last_login이 상관계수 0.498로 가장 강한 양의 상관을 보입니다. 로그인 공백이 길수록 이탈 확률이 급격히 높아집니다. 반대로 시청량, 완료율, 추천 클릭률이 높을수록 이탈 확률이 낮아집니다.</p>
+        </div>
+
+        <div class="spacer-lg"></div>
+
+        <!-- Categorical Feature Analysis -->
+        <div class="section-header">
+            <h2><span class="section-number">4</span>범주형 변수별 이탈률</h2>
+            <p>이탈률 차이가 큰 변수를 중심으로 확인</p>
+        </div>
+
+        <!-- Subscription Type -->
+        <div class="card">
+            <h3>구독 요금제 (subscription_type)</h3>
+            <p style="margin-bottom:1.5rem; color:var(--text-muted);">요금제별 이탈률 차이가 가장 극명함</p>
+            <div class="bar-chart">
+                <div class="bar-item">
+                    <div class="bar-label">Basic</div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:100%; background:var(--gradient-3);">34.4%</div>
+                    </div>
+                    <div class="bar-value" style="color:var(--accent-red);">34.4%</div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">Standard</div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:50%; background:linear-gradient(90deg, var(--accent-orange), var(--accent));">17.2%</div>
+                    </div>
+                    <div class="bar-value" style="color:var(--accent-orange);">17.2%</div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">Premium</div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:19%; background:var(--gradient-2);">6.7%</div>
+                    </div>
+                    <div class="bar-value" style="color:var(--accent-green);">6.7%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Primary Device -->
+        <div class="card">
+            <h3>주 사용 기기 (primary_device)</h3>
+            <div class="bar-chart">
+                <div class="bar-item">
+                    <div class="bar-label">Mobile</div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:100%; background:var(--gradient-3);">30.0%</div>
+                    </div>
+                    <div class="bar-value" style="color:var(--accent-red);">30.0%</div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">Laptop</div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:89%; background:linear-gradient(90deg, var(--accent-orange), var(--accent-red));">26.7%</div>
+                    </div>
+                    <div class="bar-value" style="color:var(--accent-orange);">26.7%</div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">Tablet</div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:88%; background:linear-gradient(90deg, var(--accent-orange), var(--accent-red));">26.5%</div>
+                    </div>
+                    <div class="bar-value" style="color:var(--accent-orange);">26.5%</div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">Smart TV</div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:43%; background:var(--gradient-2);">12.8%</div>
+                    </div>
+                    <div class="bar-value" style="color:var(--accent-green);">12.8%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendation Source -->
+        <div class="card">
+            <h3>유입 경로 (recommendation_source)</h3>
+            <div class="bar-chart">
+                <div class="bar-item">
+                    <div class="bar-label">Ads</div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:100%; background:var(--gradient-3);">33.7%</div>
+                    </div>
+                    <div class="bar-value" style="color:var(--accent-red);">33.7%</div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">Search</div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:72%; background:linear-gradient(90deg, var(--accent-orange), var(--accent-red));">24.4%</div>
+                    </div>
+                    <div class="bar-value" style="color:var(--accent-orange);">24.4%</div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">Trending</div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:67%; background:linear-gradient(90deg, var(--accent-orange), var(--accent));">22.6%</div>
+                    </div>
+                    <div class="bar-value" style="color:var(--accent-orange);">22.6%</div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">Friend</div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:51%; background:linear-gradient(90deg, var(--accent), var(--accent-green));">17.1%</div>
+                    </div>
+                    <div class="bar-value" style="color:var(--accent-green);">17.1%</div>
+                </div>
+                <div class="bar-item">
+                    <div class="bar-label">Algorithm</div>
+                    <div class="bar-track">
+                        <div class="bar-fill" style="width:48%; background:var(--gradient-2);">16.2%</div>
+                    </div>
+                    <div class="bar-value" style="color:var(--accent-green);">16.2%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="spacer-lg"></div>
+
+        <!-- Numeric Feature Comparison -->
+        <div class="section-header">
+            <h2><span class="section-number">5</span>이탈 여부별 수치형 피처 비교</h2>
+            <p>유지 고객(0) vs 이탈 고객(1) 평균값 비교</p>
+        </div>
+
+        <div class="card">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>피처</th>
+                            <th>유지 고객 (평균)</th>
+                            <th>이탈 고객 (평균)</th>
+                            <th>차이</th>
+                            <th>해석</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>days_since_last_login</strong></td>
+                            <td>8.3일</td>
+                            <td style="color:var(--accent-red);">27.2일</td>
+                            <td style="color:var(--accent-red);">+18.9일</td>
+                            <td><span class="badge badge-danger">핵심 신호</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>avg_watch_time (min/week)</strong></td>
+                            <td>303.6분</td>
+                            <td style="color:var(--accent-red);">181.3분</td>
+                            <td style="color:var(--accent-green);">-122.3분</td>
+                            <td><span class="badge badge-danger">핵심 신호</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>recommendation_click_rate</strong></td>
+                            <td>41.4%</td>
+                            <td style="color:var(--accent-red);">28.4%</td>
+                            <td style="color:var(--accent-green);">-13.0%p</td>
+                            <td><span class="badge badge-warning">주요 신호</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>completion_rate</strong></td>
+                            <td>74.9%</td>
+                            <td style="color:var(--accent-red);">66.6%</td>
+                            <td style="color:var(--accent-green);">-8.3%p</td>
+                            <td><span class="badge badge-warning">주요 신호</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>watch_sessions_per_week</strong></td>
+                            <td>6.2회</td>
+                            <td style="color:var(--accent-red);">4.0회</td>
+                            <td style="color:var(--accent-green);">-2.2회</td>
+                            <td><span class="badge badge-warning">주요 신호</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>app_rating</strong></td>
+                            <td>4.03점</td>
+                            <td>3.63점</td>
+                            <td style="color:var(--accent-green);">-0.40점</td>
+                            <td><span class="badge badge-primary">보조 신호</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>account_age_months</strong></td>
+                            <td>46.5개월</td>
+                            <td>38.3개월</td>
+                            <td style="color:var(--accent-green);">-8.2개월</td>
+                            <td><span class="badge badge-primary">보조 신호</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="spacer-lg"></div>
+
+        <!-- Segment Analysis -->
+        <div class="section-header">
+            <h2><span class="section-number">6</span>세그먼트별 이탈률</h2>
+            <p>로그인 공백, 활동 수준, 만족도 기준으로 고객군 분리</p>
+        </div>
+
+        <div class="grid-3">
+            <div class="card" style="border-left:4px solid var(--accent-red);">
+                <h3>로그인 공백 세그먼트</h3>
+                <div style="margin-top:1rem;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                        <span style="font-size:0.85rem;">31일 이상</span>
+                        <span style="color:var(--accent-red); font-weight:700;">59.8%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width:100%; background:var(--accent-red);"></div></div>
+                    <div style="display:flex; justify-content:space-between; margin:0.75rem 0 0.5rem;">
+                        <span style="font-size:0.85rem;">15-30일</span>
+                        <span style="color:var(--accent-orange); font-weight:700;">34.8%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width:58%; background:var(--accent-orange);"></div></div>
+                    <div style="display:flex; justify-content:space-between; margin:0.75rem 0 0.5rem;">
+                        <span style="font-size:0.85rem;">4-14일</span>
+                        <span style="color:var(--accent); font-weight:700;">10.1%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width:17%; background:var(--accent);"></div></div>
+                    <div style="display:flex; justify-content:space-between; margin:0.75rem 0 0.5rem;">
+                        <span style="font-size:0.85rem;">0-3일</span>
+                        <span style="color:var(--accent-green); font-weight:700;">7.7%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width:13%; background:var(--accent-green);"></div></div>
+                </div>
+            </div>
+
+            <div class="card" style="border-left:4px solid var(--accent-orange);">
+                <h3>활동 수준 세그먼트</h3>
+                <div style="margin-top:1rem;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                        <span style="font-size:0.85rem;">저활동</span>
+                        <span style="color:var(--accent-red); font-weight:700;">42.0%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width:100%; background:var(--accent-red);"></div></div>
+                    <div style="display:flex; justify-content:space-between; margin:0.75rem 0 0.5rem;">
+                        <span style="font-size:0.85rem;">중활동</span>
+                        <span style="color:var(--accent-orange); font-weight:700;">16.4%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width:39%; background:var(--accent-orange);"></div></div>
+                    <div style="display:flex; justify-content:space-between; margin:0.75rem 0 0.5rem;">
+                        <span style="font-size:0.85rem;">고활동</span>
+                        <span style="color:var(--accent-green); font-weight:700;">4.6%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width:11%; background:var(--accent-green);"></div></div>
+                </div>
+            </div>
+
+            <div class="card" style="border-left:4px solid var(--primary);">
+                <h3>만족도 세그먼트</h3>
+                <div style="margin-top:1rem;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                        <span style="font-size:0.85rem;">낮음</span>
+                        <span style="color:var(--accent-red); font-weight:700;">36.3%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width:100%; background:var(--accent-red);"></div></div>
+                    <div style="display:flex; justify-content:space-between; margin:0.75rem 0 0.5rem;">
+                        <span style="font-size:0.85rem;">보통</span>
+                        <span style="color:var(--accent-orange); font-weight:700;">15.4%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width:42%; background:var(--accent-orange);"></div></div>
+                    <div style="display:flex; justify-content:space-between; margin:0.75rem 0 0.5rem;">
+                        <span style="font-size:0.85rem;">높음</span>
+                        <span style="color:var(--accent-green); font-weight:700;">6.2%</span>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width:17%; background:var(--accent-green);"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="callout callout-warning">
+            <p><strong>교차 세그먼트 인사이트:</strong> 로그인 공백 31일 이상 + 저활동 고객은 이탈률이 가장 높은 조합입니다. 반대로 0-3일 이내 로그인 + 고활동 고객은 거의 이탈하지 않는 핵심 유지 고객군입니다.</p>
+        </div>
+
+        <div class="spacer-lg"></div>
+
+        <!-- EDA Conclusions -->
+        <div class="section-header">
+            <h2><span class="section-number">7</span>EDA 핵심 결론</h2>
+        </div>
+
+        <div class="card">
+            <div style="display:grid; gap:1.25rem;">
+                <div style="display:flex; align-items:flex-start; gap:1rem;">
+                    <div style="width:8px; height:8px; border-radius:50%; background:var(--accent-red); margin-top:8px; flex-shrink:0;"></div>
+                    <p><strong>최근 로그인 공백</strong>이 이탈의 가장 강한 신호 (상관계수 0.498). 31일 이상 미접속 시 이탈률 59.8%.</p>
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:1rem;">
+                    <div style="width:8px; height:8px; border-radius:50%; background:var(--accent-orange); margin-top:8px; flex-shrink:0;"></div>
+                    <p><strong>Basic 요금제</strong>(34.4%), <strong>Mobile 기기</strong>(30.0%), <strong>Ads 유입</strong>(33.7%) 고객군이 고위험.</p>
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:1rem;">
+                    <div style="width:8px; height:8px; border-radius:50%; background:var(--accent); margin-top:8px; flex-shrink:0;"></div>
+                    <p><strong>시청량, 완료율, 추천 클릭률, 앱 평가</strong>가 낮을수록 이탈 위험 증가.</p>
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:1rem;">
+                    <div style="width:8px; height:8px; border-radius:50%; background:var(--accent-green); margin-top:8px; flex-shrink:0;"></div>
+                    <p><strong>Premium + Smart TV + Algorithm 유입</strong> 고객은 가장 안정적인 유지 고객군.</p>
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:1rem;">
+                    <div style="width:8px; height:8px; border-radius:50%; background:var(--primary); margin-top:8px; flex-shrink:0;"></div>
+                    <p><strong>gender, region</strong>은 이탈률 차이가 작아 모델링에서 제외 검토.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Netflix Customer Churn Prediction Project | EDA Section</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feature Engineering - Netflix Churn Prediction</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-inner">
+            <div class="nav-logo">Netflix Churn Prediction</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Overview</a></li>
+                <li><a href="eda.html">EDA</a></li>
+                <li><a href="clustering.html">Clustering</a></li>
+                <li><a href="feature_engineering.html" class="active">Feature Engineering</a></li>
+                <li><a href="modeling.html">Modeling</a></li>
+                <li><a href="results.html">Results</a></li>
+                <li><a href="business_insight.html">Business Insight</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="hero">
+            <h1>피처 엔지니어링 실험</h1>
+            <p>다양한 파생변수를 실험했으나, 원본 피처가 가장 우수한 성능을 보였습니다</p>
+        </div>
+
+        <!-- Overview -->
+        <div class="section-header">
+            <h2><span class="section-number">1</span>실험 개요</h2>
+            <p>총 5회의 피처 엔지니어링 실험을 진행. 주요 3가지 접근 방식을 상세히 소개합니다.</p>
+        </div>
+
+        <div class="card" style="border-left:4px solid var(--primary);">
+            <h3>실험 목적</h3>
+            <p style="margin-top:0.75rem;">EDA에서 확인된 이탈 패턴(장기 미접속, 낮은 시청량, Basic/Mobile 조합 등)을 모델에 더 명시적으로 전달하여 예측 성능을 개선할 수 있는지 검증합니다.</p>
+            <div style="margin-top:1.5rem; display:grid; gap:0.75rem;">
+                <div style="display:flex; align-items:center; gap:1rem; padding:0.75rem 1rem; background:rgba(99,102,241,0.05); border-radius:8px; border-left:3px solid var(--primary);">
+                    <span class="badge badge-primary" style="flex-shrink:0;">07-1</span>
+                    <div>
+                        <strong style="font-size:0.85rem;"><em style="color:var(--primary);">고정 임계값</em> 기반 파생변수</strong>
+                        <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">도메인 직관으로 기준값을 직접 지정 (30일, 180분 등 하드코딩) → 29개 피처 생성</p>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:1rem; padding:0.75rem 1rem; background:rgba(236,72,153,0.05); border-radius:8px; border-left:3px solid var(--secondary);">
+                    <span class="badge badge-primary" style="flex-shrink:0;">07-2</span>
+                    <div>
+                        <strong style="font-size:0.85rem;"><em style="color:var(--secondary);">데이터 기반 임계값</em> 파이프라인</strong>
+                        <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">train 분포의 분위수에서 기준값을 학습하여 적용 → 35개 피처 생성 (누수 방지)</p>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:1rem; padding:0.75rem 1rem; background:rgba(99,102,241,0.02); border-radius:8px; border-left:3px solid var(--text-muted);">
+                    <span class="badge" style="flex-shrink:0; background:rgba(148,163,184,0.15);">07-3</span>
+                    <div>
+                        <strong style="font-size:0.85rem; color:var(--text-muted);">AUC/F1 최적화 실험</strong>
+                        <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">07-1 피처 subset 선별 + 하이퍼파라미터 조합 탐색</p>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:1rem; padding:0.75rem 1rem; background:rgba(99,102,241,0.02); border-radius:8px; border-left:3px solid var(--text-muted);">
+                    <span class="badge" style="flex-shrink:0; background:rgba(148,163,184,0.15);">07-4</span>
+                    <div>
+                        <strong style="font-size:0.85rem; color:var(--text-muted);">F1 경량화 실험</strong>
+                        <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">최소 피처로 F1 유지 가능한 경량 모델 탐색</p>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:1rem; padding:0.75rem 1rem; background:rgba(245,158,11,0.05); border-radius:8px; border-left:3px solid var(--accent-orange);">
+                    <span class="badge badge-primary" style="flex-shrink:0;">07-5</span>
+                    <div>
+                        <strong style="font-size:0.85rem;">글로벌 OTT 해지 논문 기반 설계</strong>
+                        <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.2rem;">RFM, 가격 가치, 추천 효과, 전환 위험 등 논문 요인을 proxy 변수로 구현 (27개)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="spacer-lg"></div>
+
+        <!-- Experiment 1: First Try -->
+        <div class="section-header">
+            <h2><span class="section-number">2</span>고정 임계값 기반 파생변수 (07-1)</h2>
+            <p>도메인 직관으로 기준값을 직접 하드코딩하여 파생변수 생성</p>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <h3>추가된 피처 구분</h3>
+                <div style="margin-top:1rem; display:grid; gap:0.75rem;">
+                    <div style="display:flex; justify-content:space-between; padding:0.5rem 0.75rem; background:rgba(99,102,241,0.05); border-radius:6px;">
+                        <span style="font-size:0.85rem;">사용 강도 (Ratio)</span>
+                        <span class="badge badge-primary">4개</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:0.5rem 0.75rem; background:rgba(99,102,241,0.05); border-radius:6px;">
+                        <span style="font-size:0.85rem;">Engagement Score</span>
+                        <span class="badge badge-primary">3개</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:0.5rem 0.75rem; background:rgba(99,102,241,0.05); border-radius:6px;">
+                        <span style="font-size:0.85rem;">위험 Flag</span>
+                        <span class="badge badge-warning">8개</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:0.5rem 0.75rem; background:rgba(99,102,241,0.05); border-radius:6px;">
+                        <span style="font-size:0.85rem;">조합 Flag (Interaction)</span>
+                        <span class="badge badge-warning">6개</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:0.5rem 0.75rem; background:rgba(99,102,241,0.05); border-radius:6px;">
+                        <span style="font-size:0.85rem;">구간화 (Bins)</span>
+                        <span class="badge badge-primary">5개</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:0.5rem 0.75rem; background:rgba(99,102,241,0.05); border-radius:6px;">
+                        <span style="font-size:0.85rem;">범주 조합 (Combo)</span>
+                        <span class="badge badge-primary">3개</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>주요 파생변수 예시</h3>
+                <div class="table-wrapper" style="margin-top:1rem;">
+                    <table>
+                        <thead>
+                            <tr><th>피처명</th><th>설명</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>watch_time_per_session</code></td><td>세션당 평균 시청 시간</td></tr>
+                            <tr><td><code>inactive_ratio</code></td><td>계정 기간 대비 미접속 비율</td></tr>
+                            <tr><td><code>engagement_score</code></td><td>완료율+클릭률+평점 종합</td></tr>
+                            <tr><td><code>basic_mobile_flag</code></td><td>Basic+Mobile 조합</td></tr>
+                            <tr><td><code>low_watch_long_inactive</code></td><td>저시청+장기미접속 조합</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- First Try Results -->
+        <div class="card" style="margin-top:1.5rem;">
+            <h3>고정 임계값 기반 결과 비교</h3>
+            <p style="color:var(--text-muted); margin-bottom:1.5rem;">Stacking 모델 (LR + LightGBM + XGBoost) 기준, Test Set 성능</p>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feature Set</th>
+                            <th>PR AUC</th>
+                            <th>ROC AUC</th>
+                            <th>F1 (조정)</th>
+                            <th>Recall (조정)</th>
+                            <th>판정</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background:rgba(16, 185, 129, 0.05);">
+                            <td><strong>Original (18개)</strong></td>
+                            <td><strong>0.7642</strong></td>
+                            <td><strong>0.9065</strong></td>
+                            <td><strong>0.6938</strong></td>
+                            <td>0.7334</td>
+                            <td><span class="badge badge-success">채택</span></td>
+                        </tr>
+                        <tr>
+                            <td>Engineered (47개)</td>
+                            <td>0.7638</td>
+                            <td>0.9061</td>
+                            <td>0.6933</td>
+                            <td>0.7458</td>
+                            <td><span class="badge badge-danger">미채택</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-top:1.5rem; display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem;">
+                <div style="text-align:center; padding:1rem; background:rgba(239,68,68,0.05); border-radius:8px;">
+                    <div style="font-size:1.25rem; font-weight:800; color:var(--accent-red);">-0.0004</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">PR AUC 변화</div>
+                </div>
+                <div style="text-align:center; padding:1rem; background:rgba(239,68,68,0.05); border-radius:8px;">
+                    <div style="font-size:1.25rem; font-weight:800; color:var(--accent-red);">-0.0004</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">ROC AUC 변화</div>
+                </div>
+                <div style="text-align:center; padding:1rem; background:rgba(239,68,68,0.05); border-radius:8px;">
+                    <div style="font-size:1.25rem; font-weight:800; color:var(--accent-red);">-0.0005</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">F1 변화</div>
+                </div>
+                <div style="text-align:center; padding:1rem; background:rgba(16,185,129,0.05); border-radius:8px;">
+                    <div style="font-size:1.25rem; font-weight:800; color:var(--accent-green);">+0.0124</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">Recall 변화</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="callout callout-warning">
+            <p><strong>미채택 사유:</strong> Recall만 소폭 상승했지만 PR AUC, ROC AUC, F1이 모두 하락했습니다. 기존 강한 변수(days_since_last_login, 시청량 등)의 변형이 중복 신호를 만들어 모델에 노이즈를 추가한 것으로 판단됩니다.</p>
+        </div>
+
+        <div class="spacer-lg"></div>
+
+        <!-- Experiment 2: Behavior Pipeline -->
+        <div class="section-header">
+            <h2><span class="section-number">3</span>데이터 기반 임계값 파이프라인 (07-2)</h2>
+            <p>train 분포의 분위수에서 기준값을 학습하여 적용 — 데이터 누수 방지 구조</p>
+        </div>
+
+        <div class="card" style="border-left:4px solid var(--secondary);">
+            <h3>파이프라인 설계 핵심</h3>
+            <p style="color:var(--text-muted); margin-top:0.75rem; margin-bottom:1.25rem;">
+                <code>ChurnBehaviorFeatureEngineer</code> — sklearn <code>BaseEstimator</code> + <code>TransformerMixin</code>을 상속한 커스텀 Transformer.
+                <strong>fit 시 train 데이터에서만 quantile 임계값을 학습</strong>하고, transform 시 해당 임계값을 적용하여 data leakage를 원천 차단합니다.
+            </p>
+            <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:0.75rem;">
+                <div style="padding:0.75rem; background:rgba(236,72,153,0.05); border-radius:8px; text-align:center;">
+                    <div style="font-size:1.5rem; font-weight:800; color:var(--secondary);">35</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">추가 생성 피처</div>
+                </div>
+                <div style="padding:0.75rem; background:rgba(236,72,153,0.05); border-radius:8px; text-align:center;">
+                    <div style="font-size:1.5rem; font-weight:800; color:var(--secondary);">53</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">총 피처 수 (18+35)</div>
+                </div>
+                <div style="padding:0.75rem; background:rgba(236,72,153,0.05); border-radius:8px; text-align:center;">
+                    <div style="font-size:1.5rem; font-weight:800; color:var(--secondary);">9</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">피처 카테고리</div>
+                </div>
+                <div style="padding:0.75rem; background:rgba(236,72,153,0.05); border-radius:8px; text-align:center;">
+                    <div style="font-size:1.5rem; font-weight:800; color:var(--secondary);">4</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">비교 모델 수</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-2" style="margin-top:1.5rem;">
+            <div class="card">
+                <h3>피처 카테고리 구성</h3>
+                <div style="margin-top:1rem; display:grid; gap:0.75rem;">
+                    <div style="display:flex; justify-content:space-between; padding:0.5rem 0.75rem; background:rgba(236,72,153,0.05); border-radius:6px;">
+                        <span style="font-size:0.85rem;">사용 강도 (Usage Intensity)</span>
+                        <span class="badge badge-primary">3개</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:0.5rem 0.75rem; background:rgba(236,72,153,0.05); border-radius:6px;">
+                        <span style="font-size:0.85rem;">계정 나이 비율 (Account Age Ratio)</span>
+                        <span class="badge badge-primary">3개</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:0.5rem 0.75rem; background:rgba(236,72,153,0.05); border-radius:6px;">
+                        <span style="font-size:0.85rem;">시청 완료 행동 (Completion)</span>
+                        <span class="badge badge-primary">5개</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:0.5rem 0.75rem; background:rgba(236,72,153,0.05); border-radius:6px;">
+                        <span style="font-size:0.85rem;">추천 반응 (Recommendation)</span>
+                        <span class="badge badge-primary">5개</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:0.5rem 0.75rem; background:rgba(236,72,153,0.05); border-radius:6px;">
+                        <span style="font-size:0.85rem;">비활성 위험 (Inactivity Risk)</span>
+                        <span class="badge badge-warning">5개</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:0.5rem 0.75rem; background:rgba(236,72,153,0.05); border-radius:6px;">
+                        <span style="font-size:0.85rem;">Engagement Score</span>
+                        <span class="badge badge-primary">2개</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:0.5rem 0.75rem; background:rgba(236,72,153,0.05); border-radius:6px;">
+                        <span style="font-size:0.85rem;">플랜/기기 조합 (Interaction)</span>
+                        <span class="badge badge-primary">3개</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:0.5rem 0.75rem; background:rgba(236,72,153,0.05); border-radius:6px;">
+                        <span style="font-size:0.85rem;">범주 조합 (Categorical Combo)</span>
+                        <span class="badge badge-primary">5개</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; padding:0.5rem 0.75rem; background:rgba(236,72,153,0.05); border-radius:6px;">
+                        <span style="font-size:0.85rem;">위험 종합 (Risk Aggregation)</span>
+                        <span class="badge badge-warning">4개</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>주요 파생변수 예시</h3>
+                <div class="table-wrapper" style="margin-top:1rem;">
+                    <table>
+                        <thead>
+                            <tr><th>피처명</th><th>설명</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td><code>watch_per_login_day</code></td><td>접속일 대비 시청 강도</td></tr>
+                            <tr><td><code>inactive_low_watch_flag</code></td><td>미접속+저시청 복합 위험</td></tr>
+                            <tr><td><code>low_interest_flag</code></td><td>낮은 추천 클릭+평점 → 무관심</td></tr>
+                            <tr><td><code>basic_mobile_flag</code></td><td>Basic+Mobile 이탈 고위험 조합</td></tr>
+                            <tr><td><code>high_risk_behavior_count</code></td><td>위험 플래그 합산 종합 점수</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="callout callout-info" style="margin-top:1.25rem;">
+                    <p><strong>Leakage 방지 핵심:</strong> quantile 기반 flag의 임계값을 fit(train)에서만 계산하고 transform 시 고정 적용 → test 데이터 정보가 피처 생성에 반영되지 않음</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Behavior Pipeline Results -->
+        <div class="card" style="margin-top:1.5rem;">
+            <h3>데이터 기반 임계값 모델별 결과 비교</h3>
+            <p style="color:var(--text-muted); margin-bottom:1.5rem;">4개 모델에서 Original vs Behavior FE 비교, Test Set PR AUC 기준</p>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>모델</th>
+                            <th>Original PR AUC</th>
+                            <th>Behavior FE PR AUC</th>
+                            <th>변화량</th>
+                            <th>Top 10% Churn</th>
+                            <th>판정</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>LogisticRegression</td>
+                            <td>0.7549</td>
+                            <td>0.7530</td>
+                            <td style="color:var(--accent-red);">-0.0019</td>
+                            <td style="color:var(--accent-red);">-0.9%</td>
+                            <td><span class="badge badge-danger">미채택</span></td>
+                        </tr>
+                        <tr>
+                            <td>LightGBM</td>
+                            <td>0.7536</td>
+                            <td>0.7518</td>
+                            <td style="color:var(--accent-red);">-0.0018</td>
+                            <td style="color:var(--accent-red);">-1.3%</td>
+                            <td><span class="badge badge-danger">미채택</span></td>
+                        </tr>
+                        <tr style="background:rgba(16, 185, 129, 0.03);">
+                            <td>GradientBoosting</td>
+                            <td>0.7506</td>
+                            <td>0.7513</td>
+                            <td style="color:var(--accent-green);">+0.0007</td>
+                            <td style="color:var(--accent-red);">-0.9%</td>
+                            <td><span class="badge badge-danger">미채택</span></td>
+                        </tr>
+                        <tr>
+                            <td>RandomForest</td>
+                            <td>0.7442</td>
+                            <td>0.7322</td>
+                            <td style="color:var(--accent-red);">-0.0120</td>
+                            <td style="color:var(--accent-red);">-0.9%</td>
+                            <td><span class="badge badge-danger">미채택</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="margin-top:1.5rem; display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem;">
+                <div style="text-align:center; padding:1rem; background:rgba(239,68,68,0.05); border-radius:8px;">
+                    <div style="font-size:1.25rem; font-weight:800; color:var(--accent-red);">3/4</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">모델 성능 하락</div>
+                </div>
+                <div style="text-align:center; padding:1rem; background:rgba(239,68,68,0.05); border-radius:8px;">
+                    <div style="font-size:1.25rem; font-weight:800; color:var(--accent-red);">4/4</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">Top 10% 정밀도 하락</div>
+                </div>
+                <div style="text-align:center; padding:1rem; background:rgba(239,68,68,0.05); border-radius:8px;">
+                    <div style="font-size:1.25rem; font-weight:800; color:var(--accent-red);">-0.012</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">최대 하락 (RF)</div>
+                </div>
+                <div style="text-align:center; padding:1rem; background:rgba(16,185,129,0.05); border-radius:8px;">
+                    <div style="font-size:1.25rem; font-weight:800; color:var(--accent-green);">+0.0007</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">유일한 개선 (GB)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Behavior Pipeline Value -->
+        <div class="card" style="margin-top:1.5rem; border-left:4px solid var(--accent-orange);">
+            <h3>예측 실패, 그러나 캠페인 해석 가치</h3>
+            <p style="color:var(--text-muted); margin-top:0.75rem; margin-bottom:1.25rem;">
+                예측 모델 개선에는 실패했지만, 생성된 행동 피처들은 <strong>캠페인 액션 매트릭스</strong>의 타겟팅 규칙으로 활용되었습니다.
+            </p>
+            <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:1rem;">
+                <div style="padding:0.75rem 1rem; background:rgba(245,158,11,0.05); border-radius:8px;">
+                    <code style="font-size:0.8rem;">inactive_low_watch_flag</code>
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">→ 고위험 그룹 즉시 개입 타겟</p>
+                </div>
+                <div style="padding:0.75rem 1rem; background:rgba(245,158,11,0.05); border-radius:8px;">
+                    <code style="font-size:0.8rem;">low_interest_flag</code>
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">→ 콘텐츠 추천 개인화 캠페인</p>
+                </div>
+                <div style="padding:0.75rem 1rem; background:rgba(245,158,11,0.05); border-radius:8px;">
+                    <code style="font-size:0.8rem;">basic_mobile_flag</code>
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">→ 업그레이드 프로모션 대상</p>
+                </div>
+                <div style="padding:0.75rem 1rem; background:rgba(245,158,11,0.05); border-radius:8px;">
+                    <code style="font-size:0.8rem;">high_risk_behavior_count</code>
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">→ 위험 수준별 대응 우선순위</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="callout callout-warning" style="margin-top:1.5rem;">
+            <p><strong>미채택 사유:</strong> 35개 행동 피처 추가 시 4개 모델 모두에서 Top 10% 정밀도가 하락했습니다. Leakage-safe 설계는 올바르지만, 기존 원본 피처가 이미 이탈 패턴을 충분히 포착하고 있어 추가 정보가 노이즈로 작용했습니다. 단, 캠페인 설계용 해석 피처로는 성공적인 실험입니다.</p>
+        </div>
+
+        <div class="spacer-lg"></div>
+
+        <!-- Experiment 3: Paper-Based -->
+        <div class="section-header">
+            <h2><span class="section-number">4</span>논문 기반 Proxy 변수 설계 (07-5)</h2>
+            <p>글로벌 OTT/SVOD 해지 요인 논문에서 제시된 요인을 현재 데이터셋의 proxy로 구현</p>
+        </div>
+
+        <div class="card" style="border-left:4px solid var(--accent-orange); margin-bottom:1.5rem;">
+            <h3>참고 논문</h3>
+            <div style="margin-top:1rem; display:grid; gap:0.75rem;">
+                <div style="padding:0.75rem 1rem; background:rgba(245,158,11,0.03); border-radius:6px;">
+                    <a href="https://www.dbpia.co.kr/pdf/pdfAiChatView.do?nodeId=NODE11396704&width=1470" target="_blank" style="font-size:0.85rem; font-weight:600; color:var(--text-light); text-decoration:none; border-bottom:1px dashed var(--text-muted);">OTT 서비스의 이용자는 왜 구독을 해지하는가?</a>
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">출처: DBpia</p>
+                </div>
+                <div style="padding:0.75rem 1rem; background:rgba(245,158,11,0.03); border-radius:6px;">
+                    <a href="https://www.dbpia.co.kr/pdf/pdfAiChatView.do?nodeId=NODE12538822&width=1151" target="_blank" style="font-size:0.85rem; font-weight:600; color:var(--text-light); text-decoration:none; border-bottom:1px dashed var(--text-muted);">구독 피로감과 가격 민감도가 OTT 서비스의 구독 해지 의도에 미치는 영향: 사용자 경험(UX)의 조절 효과를 중심으로</a>
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">출처: DBpia</p>
+                </div>
+                <div style="padding:0.75rem 1rem; background:rgba(245,158,11,0.03); border-radius:6px;">
+                    <a href="https://www-earticle-net.ap2.proxy.openathens.net/Article/A478290" target="_blank" style="font-size:0.85rem; font-weight:600; color:var(--text-light); text-decoration:none; border-bottom:1px dashed var(--text-muted);">OTT 플랫폼 유형에 따른 구독 해지 결정요인 분석: 전략적 포지셔닝을 위한 함의</a>
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.25rem;">출처: e-Article</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>논문 기반 피처 설계 개념</h3>
+            <p style="color:var(--text-muted); margin-bottom:1.5rem;">위 논문에서 제시된 해지 요인을 현재 데이터셋의 proxy 변수로 구현</p>
+
+            <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:1rem;">
+                <div style="padding:1rem; background:rgba(99,102,241,0.05); border-radius:8px; border-left:3px solid var(--primary);">
+                    <div style="font-weight:600; font-size:0.9rem; margin-bottom:0.5rem;">가격 대비 가치</div>
+                    <p style="font-size:0.8rem; color:var(--text-muted);">watch_time_per_plan, value_for_money_score, price_burden_proxy</p>
+                </div>
+                <div style="padding:1rem; background:rgba(236,72,153,0.05); border-radius:8px; border-left:3px solid var(--secondary);">
+                    <div style="font-weight:600; font-size:0.9rem; margin-bottom:0.5rem;">추천/개인화 반응</div>
+                    <p style="font-size:0.8rem; color:var(--text-muted);">recommendation_effectiveness, personalization_risk</p>
+                </div>
+                <div style="padding:1rem; background:rgba(245,158,11,0.05); border-radius:8px; border-left:3px solid var(--accent-orange);">
+                    <div style="font-weight:600; font-size:0.9rem; margin-bottom:0.5rem;">전환 위험 / 구독 피로감</div>
+                    <p style="font-size:0.8rem; color:var(--text-muted);">switching_risk_proxy, subscription_fatigue_proxy</p>
+                </div>
+                <div style="padding:1rem; background:rgba(6,182,212,0.05); border-radius:8px; border-left:3px solid var(--accent);">
+                    <div style="font-weight:600; font-size:0.9rem; margin-bottom:0.5rem;">RFM 변형 / 서비스 의존도</div>
+                    <p style="font-size:0.8rem; color:var(--text-muted);">rfm_churn_risk, service_dependency_score</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paper FE Results -->
+        <div class="card" style="margin-top:1.5rem;">
+            <h3>논문 기반 FE 결과 비교</h3>
+            <p style="color:var(--text-muted); margin-bottom:1.5rem;">각 모델별 best 후보 기준, Test Set 성능 (valid threshold 적용)</p>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feature Set</th>
+                            <th>Best 모델</th>
+                            <th>Test F1</th>
+                            <th>Test PR AUC</th>
+                            <th>Test ROC AUC</th>
+                            <th>판정</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background:rgba(16, 185, 129, 0.05);">
+                            <td><strong>Original</strong></td>
+                            <td>LogisticRegression</td>
+                            <td><strong>0.6873</strong></td>
+                            <td><strong>0.7549</strong></td>
+                            <td><strong>0.9038</strong></td>
+                            <td><span class="badge badge-success">채택</span></td>
+                        </tr>
+                        <tr>
+                            <td>Paper FE (45개)</td>
+                            <td>LogisticRegression</td>
+                            <td>0.6858</td>
+                            <td>0.7545</td>
+                            <td>0.9036</td>
+                            <td><span class="badge badge-danger">미채택</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Paper FE Diagnostics -->
+        <div class="card" style="margin-top:1.5rem;">
+            <h3>논문 기반 피처 방향성 진단</h3>
+            <p style="color:var(--text-muted); margin-bottom:1.5rem;">성능 개선에는 실패했지만, churn 방향성과 일치하는 해석적 가치는 확인됨</p>
+
+            <div style="display:grid; gap:0.75rem;">
+                <div style="display:flex; align-items:center; gap:1rem; padding:0.75rem; background:rgba(239,68,68,0.05); border-radius:8px;">
+                    <span style="font-size:0.8rem; width:180px; flex-shrink:0; font-weight:600;">rfm_churn_risk</span>
+                    <div style="flex:1; display:flex; align-items:center; gap:0.5rem;">
+                        <div style="flex:1; height:6px; background:var(--bg-dark); border-radius:3px; overflow:hidden;">
+                            <div style="width:100%; height:100%; background:var(--accent-red);"></div>
+                        </div>
+                        <span style="font-size:0.75rem; color:var(--accent-red); width:80px;">+19.27</span>
+                    </div>
+                    <span style="font-size:0.7rem; color:var(--text-muted);">이탈에서 높음</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:1rem; padding:0.75rem; background:rgba(239,68,68,0.05); border-radius:8px;">
+                    <span style="font-size:0.8rem; width:180px; flex-shrink:0; font-weight:600;">low_service_need</span>
+                    <div style="flex:1; display:flex; align-items:center; gap:0.5rem;">
+                        <div style="flex:1; height:6px; background:var(--bg-dark); border-radius:3px; overflow:hidden;">
+                            <div style="width:55%; height:100%; background:var(--accent-red);"></div>
+                        </div>
+                        <span style="font-size:0.75rem; color:var(--accent-red); width:80px;">+0.371</span>
+                    </div>
+                    <span style="font-size:0.7rem; color:var(--text-muted);">이탈에서 높음</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:1rem; padding:0.75rem; background:rgba(239,68,68,0.05); border-radius:8px;">
+                    <span style="font-size:0.8rem; width:180px; flex-shrink:0; font-weight:600;">switching_risk_proxy</span>
+                    <div style="flex:1; display:flex; align-items:center; gap:0.5rem;">
+                        <div style="flex:1; height:6px; background:var(--bg-dark); border-radius:3px; overflow:hidden;">
+                            <div style="width:52%; height:100%; background:var(--accent-red);"></div>
+                        </div>
+                        <span style="font-size:0.75rem; color:var(--accent-red); width:80px;">+0.378</span>
+                    </div>
+                    <span style="font-size:0.7rem; color:var(--text-muted);">이탈에서 높음</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:1rem; padding:0.75rem; background:rgba(16,185,129,0.05); border-radius:8px;">
+                    <span style="font-size:0.8rem; width:180px; flex-shrink:0; font-weight:600;">value_for_money_score</span>
+                    <div style="flex:1; display:flex; align-items:center; gap:0.5rem;">
+                        <div style="flex:1; height:6px; background:var(--bg-dark); border-radius:3px; overflow:hidden;">
+                            <div style="width:65%; height:100%; background:var(--accent-green);"></div>
+                        </div>
+                        <span style="font-size:0.75rem; color:var(--accent-green); width:80px;">-31.49</span>
+                    </div>
+                    <span style="font-size:0.7rem; color:var(--text-muted);">이탈에서 낮음</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:1rem; padding:0.75rem; background:rgba(16,185,129,0.05); border-radius:8px;">
+                    <span style="font-size:0.8rem; width:180px; flex-shrink:0; font-weight:600;">service_dependency</span>
+                    <div style="flex:1; display:flex; align-items:center; gap:0.5rem;">
+                        <div style="flex:1; height:6px; background:var(--bg-dark); border-radius:3px; overflow:hidden;">
+                            <div style="width:58%; height:100%; background:var(--accent-green);"></div>
+                        </div>
+                        <span style="font-size:0.75rem; color:var(--accent-green); width:80px;">-15.46</span>
+                    </div>
+                    <span style="font-size:0.7rem; color:var(--text-muted);">이탈에서 낮음</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="spacer-lg"></div>
+
+        <!-- Final Conclusion -->
+        <div class="section-header">
+            <h2><span class="section-number">5</span>피처 엔지니어링 최종 결론</h2>
+        </div>
+
+        <div class="card" style="background:linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(6, 182, 212, 0.05)); border:1px solid rgba(16, 185, 129, 0.2);">
+            <h3 style="color:var(--accent-green);">최종 판단: 원본 피처 18개 채택</h3>
+            <div style="margin-top:1.5rem; display:grid; gap:1.25rem;">
+                <div style="display:flex; align-items:flex-start; gap:1rem;">
+                    <span style="color:var(--accent-green); font-size:1.1rem;">✓</span>
+                    <p>Stacking 모델이 원본 수치형/범주형 피처에서 이미 이탈 패턴을 충분히 학습하고 있었습니다.</p>
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:1rem;">
+                    <span style="color:var(--accent-green); font-size:1.1rem;">✓</span>
+                    <p>파생변수 대부분이 기존 강한 변수(days_since_last_login, 시청량, 완료율)의 변형으로, 중복 신호가 많았습니다.</p>
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:1rem;">
+                    <span style="color:var(--accent-green); font-size:1.1rem;">✓</span>
+                    <p>논문 기반 피처는 해석력은 좋았지만 (RFM 위험, 서비스 의존도 등 churn 방향성 일치), 예측 성능 개선에는 기여하지 못했습니다.</p>
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:1rem;">
+                    <span style="color:var(--accent-green); font-size:1.1rem;">✓</span>
+                    <p>이 결과는 "복잡한 파생변수를 추가한다고 항상 좋아지는 것은 아니다"는 중요한 실험적 교훈입니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Netflix Customer Churn Prediction Project | Feature Engineering Section</p>
+        </div>
+    </div>
+</body>
+</html>

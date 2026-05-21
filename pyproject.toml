@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "catboost>=1.2.10",
+    "imblearn>=0.0",
     "ipykernel>=7.2.0",
     "lightgbm>=4.6.0",
     "matplotlib>=3.10.9",

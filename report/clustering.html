@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clustering - Netflix Churn Prediction</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-inner">
+            <div class="nav-logo">Netflix Churn Prediction</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Overview</a></li>
+                <li><a href="eda.html">EDA</a></li>
+                <li><a href="clustering.html" class="active">Clustering</a></li>
+                <li><a href="feature_engineering.html">Feature Engineering</a></li>
+                <li><a href="modeling.html">Modeling</a></li>
+                <li><a href="results.html">Results</a></li>
+                <li><a href="business_insight.html">Business Insight</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="hero">
+            <h1>고객 군집화 (Clustering)</h1>
+            <p>StandardScaler + KMeans(k=3)로 고객을 이탈 위험도 기준으로 분류합니다</p>
+        </div>
+
+        <!-- Method -->
+        <div class="section-header">
+            <h2><span class="section-number">1</span>군집화 방법</h2>
+            <p>수치형 변수 스케일링 + 범주형 변수 One-Hot Encoding 후 KMeans 적용</p>
+        </div>
+
+        <div class="card">
+            <div class="pipeline">
+                <div class="pipeline-step">
+                    <div style="font-size:1.2rem; margin-bottom:0.5rem;">📋</div>
+                    <div style="font-weight:600; font-size:0.8rem;">피처 선택</div>
+                    <div style="font-size:0.7rem; color:var(--text-muted);">16개 변수</div>
+                </div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-step">
+                    <div style="font-size:1.2rem; margin-bottom:0.5rem;">⚖️</div>
+                    <div style="font-weight:600; font-size:0.8rem;">StandardScaler</div>
+                    <div style="font-size:0.7rem; color:var(--text-muted);">수치형 정규화</div>
+                </div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-step">
+                    <div style="font-size:1.2rem; margin-bottom:0.5rem;">🔤</div>
+                    <div style="font-weight:600; font-size:0.8rem;">OneHotEncoder</div>
+                    <div style="font-size:0.7rem; color:var(--text-muted);">범주형 변환</div>
+                </div>
+                <div class="pipeline-arrow">→</div>
+                <div class="pipeline-step active">
+                    <div style="font-size:1.2rem; margin-bottom:0.5rem;">🎯</div>
+                    <div style="font-weight:600; font-size:0.8rem;">KMeans (k=3)</div>
+                    <div style="font-size:0.7rem; color:var(--text-muted);">최종 37차원</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="callout callout-info">
+            <p><strong>설계 원칙:</strong> churned(이탈 여부)는 군집 생성에 사용하지 않습니다. 군집이 만들어진 뒤 이탈률을 붙여 해석합니다. 이는 군집이 이탈을 "외워서" 나누는 것이 아니라, 행동 패턴만으로 자연스럽게 위험도가 분리되는지 확인하기 위함입니다.</p>
+        </div>
+
+        <div class="spacer-lg"></div>
+
+        <!-- K Selection -->
+        <div class="section-header">
+            <h2><span class="section-number">2</span>군집 수 선택</h2>
+            <p>k=2~8 탐색 결과, Silhouette Score 최적화 + 해석 가능성을 기준으로 k=3 선택</p>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <h3>Silhouette Score</h3>
+                <div style="margin-top:1rem;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                        <span style="font-size:0.85rem; color:var(--text-secondary);">k=2</span>
+                        <div style="flex:1; margin:0 1rem;">
+                            <div class="progress-bar"><div class="progress-fill" style="width:100%; background:var(--primary-light);"></div></div>
+                        </div>
+                        <span style="font-size:0.85rem; font-weight:600;">0.127</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; background:rgba(99,102,241,0.1); padding:0.5rem 0.75rem; border-radius:6px;">
+                        <span style="font-size:0.85rem; color:var(--primary-light); font-weight:600;">k=3 ✓</span>
+                        <div style="flex:1; margin:0 1rem;">
+                            <div class="progress-bar"><div class="progress-fill" style="width:68%; background:var(--primary);"></div></div>
+                        </div>
+                        <span style="font-size:0.85rem; font-weight:600; color:var(--primary-light);">0.086</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+                        <span style="font-size:0.85rem; color:var(--text-secondary);">k=4</span>
+                        <div style="flex:1; margin:0 1rem;">
+                            <div class="progress-bar"><div class="progress-fill" style="width:66%; background:var(--text-muted);"></div></div>
+                        </div>
+                        <span style="font-size:0.85rem; font-weight:600;">0.083</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <span style="font-size:0.85rem; color:var(--text-secondary);">k=5</span>
+                        <div style="flex:1; margin:0 1rem;">
+                            <div class="progress-bar"><div class="progress-fill" style="width:54%; background:var(--text-muted);"></div></div>
+                        </div>
+                        <span style="font-size:0.85rem; font-weight:600;">0.069</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>k=3 선택 근거</h3>
+                <div style="margin-top:1rem; display:grid; gap:1rem;">
+                    <div style="display:flex; align-items:flex-start; gap:0.75rem;">
+                        <span style="color:var(--accent-green);">✓</span>
+                        <p style="font-size:0.85rem;">k=2보다 비즈니스 해석이 풍부 (고위험/일반/충성 3그룹)</p>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:0.75rem;">
+                        <span style="color:var(--accent-green);">✓</span>
+                        <p style="font-size:0.85rem;">k=4 이후 Silhouette Score 급감, 군집 간 경계 불분명</p>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:0.75rem;">
+                        <span style="color:var(--accent-green);">✓</span>
+                        <p style="font-size:0.85rem;">이탈 위험군, 일반 유지군, 핵심 충성군으로 명확히 해석 가능</p>
+                    </div>
+                    <div style="display:flex; align-items:flex-start; gap:0.75rem;">
+                        <span style="color:var(--accent-green);">✓</span>
+                        <p style="font-size:0.85rem;">각 군집의 고객 수가 충분하여 실무 활용 가능</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="spacer-lg"></div>
+
+        <!-- Cluster Results -->
+        <div class="section-header">
+            <h2><span class="section-number">3</span>군집 결과</h2>
+            <p>churned를 사용하지 않고 만든 군집이 이탈률에서 극명한 차이를 보임</p>
+        </div>
+
+        <div class="cluster-group">
+            <div class="cluster-card danger" style="background:rgba(239, 68, 68, 0.05);">
+                <div class="cluster-name" style="color:var(--accent-red);">Cluster 1: 고위험 이탈군</div>
+                <div class="cluster-churn" style="color:var(--accent-red);">54.6%</div>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem;">이탈률 (전체 평균의 2.61배)</div>
+                <div style="display:grid; gap:0.5rem; font-size:0.8rem; color:var(--text-secondary);">
+                    <div>👥 14,335명 (28.7%)</div>
+                    <div>📊 전체 이탈자의 <strong style="color:var(--accent-red);">74.8%</strong> 차지</div>
+                    <div>📱 Mobile 비중 높음</div>
+                    <div>💰 Basic 요금제 다수</div>
+                    <div>📅 평균 미접속 27.7일</div>
+                    <div>⏱️ 주당 시청 175분</div>
+                </div>
+            </div>
+
+            <div class="cluster-card warning" style="background:rgba(6, 182, 212, 0.05);">
+                <div class="cluster-name" style="color:var(--accent);">Cluster 2: 일반 유지군</div>
+                <div class="cluster-churn" style="color:var(--accent);">9.5%</div>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem;">이탈률 (전체 평균의 0.45배)</div>
+                <div style="display:grid; gap:0.5rem; font-size:0.8rem; color:var(--text-secondary);">
+                    <div>👥 25,305명 (50.6%)</div>
+                    <div>📊 전체 이탈자의 22.9% 차지</div>
+                    <div>📺 Smart TV 비중 높음</div>
+                    <div>💰 Standard 비중 높음</div>
+                    <div>📅 평균 미접속 5.8일</div>
+                    <div>⏱️ 주당 시청 242분</div>
+                </div>
+            </div>
+
+            <div class="cluster-card success" style="background:rgba(16, 185, 129, 0.05);">
+                <div class="cluster-name" style="color:var(--accent-green);">Cluster 0: 핵심 충성군</div>
+                <div class="cluster-churn" style="color:var(--accent-green);">2.3%</div>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem;">이탈률 (전체 평균의 0.11배)</div>
+                <div style="display:grid; gap:0.5rem; font-size:0.8rem; color:var(--text-secondary);">
+                    <div>👥 10,360명 (20.7%)</div>
+                    <div>📊 전체 이탈자의 2.3% 차지</div>
+                    <div>📺 Smart TV + Premium</div>
+                    <div>💰 Premium 비중 높음</div>
+                    <div>📅 평균 미접속 6.9일</div>
+                    <div>⏱️ 주당 시청 <strong>507분</strong></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="spacer-lg"></div>
+
+        <!-- Cluster Summary Table -->
+        <div class="section-header">
+            <h2><span class="section-number">4</span>군집별 상세 지표</h2>
+        </div>
+
+        <div class="card">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>군집</th>
+                            <th>고객 수</th>
+                            <th>고객 비중</th>
+                            <th>이탈자 수</th>
+                            <th>이탈률</th>
+                            <th>이탈자 비중</th>
+                            <th>Lift</th>
+                            <th>평균 시청시간</th>
+                            <th>평균 미접속일</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background:rgba(239, 68, 68, 0.05);">
+                            <td><strong style="color:var(--accent-red);">Cluster 1 (고위험)</strong></td>
+                            <td>14,335</td>
+                            <td>28.7%</td>
+                            <td>7,830</td>
+                            <td><strong style="color:var(--accent-red);">54.6%</strong></td>
+                            <td><strong style="color:var(--accent-red);">74.8%</strong></td>
+                            <td style="color:var(--accent-red);">2.61x</td>
+                            <td>175.7분</td>
+                            <td>27.7일</td>
+                        </tr>
+                        <tr>
+                            <td><strong style="color:var(--accent);">Cluster 2 (일반)</strong></td>
+                            <td>25,305</td>
+                            <td>50.6%</td>
+                            <td>2,395</td>
+                            <td>9.5%</td>
+                            <td>22.9%</td>
+                            <td>0.45x</td>
+                            <td>242.0분</td>
+                            <td>5.8일</td>
+                        </tr>
+                        <tr style="background:rgba(16, 185, 129, 0.05);">
+                            <td><strong style="color:var(--accent-green);">Cluster 0 (충성)</strong></td>
+                            <td>10,360</td>
+                            <td>20.7%</td>
+                            <td>239</td>
+                            <td><strong style="color:var(--accent-green);">2.3%</strong></td>
+                            <td>2.3%</td>
+                            <td style="color:var(--accent-green);">0.11x</td>
+                            <td>507.2분</td>
+                            <td>6.9일</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="spacer-lg"></div>
+
+        <!-- Cluster Characteristics -->
+        <div class="section-header">
+            <h2><span class="section-number">5</span>군집별 대표 특성</h2>
+        </div>
+
+        <div class="card">
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>특성</th>
+                            <th style="color:var(--accent-red);">Cluster 1 (고위험)</th>
+                            <th style="color:var(--accent);">Cluster 2 (일반)</th>
+                            <th style="color:var(--accent-green);">Cluster 0 (충성)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>주 요금제</strong></td>
+                            <td>Basic 중심</td>
+                            <td>Standard 중심</td>
+                            <td>Premium 비중 높음</td>
+                        </tr>
+                        <tr>
+                            <td><strong>주 기기</strong></td>
+                            <td>Mobile 비중 높음</td>
+                            <td>Smart TV 중심</td>
+                            <td>Smart TV 중심</td>
+                        </tr>
+                        <tr>
+                            <td><strong>주당 시청 세션</strong></td>
+                            <td>3.7회</td>
+                            <td>4.9회</td>
+                            <td><strong>10.6회</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>추천 클릭률</strong></td>
+                            <td>26.7%</td>
+                            <td>41.2%</td>
+                            <td><strong>49.1%</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>콘텐츠 완료율</strong></td>
+                            <td>64.7%</td>
+                            <td>73.8%</td>
+                            <td><strong>83.0%</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="spacer-lg"></div>
+
+        <!-- Conclusions -->
+        <div class="section-header">
+            <h2><span class="section-number">6</span>군집화 핵심 결론</h2>
+        </div>
+
+        <div class="card" style="background:linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(6, 182, 212, 0.05));">
+            <div style="display:grid; gap:1.5rem;">
+                <div style="display:flex; align-items:flex-start; gap:1rem;">
+                    <div style="width:8px; height:8px; border-radius:50%; background:var(--accent-red); margin-top:8px; flex-shrink:0;"></div>
+                    <div>
+                        <p><strong>Cluster 1</strong>은 전체 고객의 28.7%이지만, 전체 이탈자의 74.8%가 집중됩니다. 리텐션 캠페인의 최우선 대상입니다.</p>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:1rem;">
+                    <div style="width:8px; height:8px; border-radius:50%; background:var(--accent); margin-top:8px; flex-shrink:0;"></div>
+                    <div>
+                        <p><strong>Cluster 2</strong>는 대규모 일반 유지 고객군(50.6%)으로, 과도한 할인보다 추천 품질 유지와 경험 개선이 적합합니다.</p>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:1rem;">
+                    <div style="width:8px; height:8px; border-radius:50%; background:var(--accent-green); margin-top:8px; flex-shrink:0;"></div>
+                    <div>
+                        <p><strong>Cluster 0</strong>은 이탈률 2.3%의 충성 고객군으로, VIP 유지와 프리미엄 경험 강화에 집중합니다.</p>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:1rem;">
+                    <div style="width:8px; height:8px; border-radius:50%; background:var(--primary); margin-top:8px; flex-shrink:0;"></div>
+                    <div>
+                        <p>churned를 사용하지 않고 만든 군집이 이탈률에서 극명한 차이를 보인다는 것은, <strong>사용 행동 조합만으로도 이탈 위험을 구분할 수 있음</strong>을 의미합니다.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Netflix Customer Churn Prediction Project | Clustering Section</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -46,9 +46,14 @@ Netflix-style user behavior data를 활용해 고객 세그먼트, 군집화, ch
 │   └── final_churn_model_metadata.json
 ├── reports/
 │   ├── index.html
+│   ├── eda_analysis.html
+│   ├── interactive_report.html
 │   ├── modeling_methodology.html
+│   ├── retention_analysis.html
 │   └── top_risk_retention_strategy.html
 ├── scripts/
+│   ├── build_eda_report.py
+│   ├── build_interactive_report.py
 │   ├── build_modeling_methodology_report.py
 │   └── build_top_risk_retention_report.py
 ├── ott_churn_feature_engineering_plan.md
@@ -123,7 +128,7 @@ uv run jupyter lab
 8. `07-2_churn_behavior_feature_engineering_pipeline.ipynb`
    - train 기준 quantile을 fit하는 leakage-safe behavior feature pipeline
    - `inactive_low_watch_flag`, `low_interest_flag`, `basic_mobile_flag`, `engagement_score` 등 생성
-   - 모델 입력보다는 retention action 해석용 피처로 활용하는 결론 도출
+   - 최종 모델 입력으로 채택하지 않고, 성능 개선이 제한적이었다는 실험 근거와 행동 해석 보조 자료로 정리
 
 9. `07-3_churn_auc_f1_optimization.ipynb`
    - ROC AUC와 F1 개선 목적의 compact feature 및 모델 탐색
@@ -143,12 +148,27 @@ uv run jupyter lab
 ## HTML Reports
 
 분석 결과를 발표/공유하기 쉽게 HTML 리포트로 정리했습니다.
+각 HTML 페이지는 노트북 진행 방식에 맞춰 **가정 > 실험 > 결과 > 최종** 흐름을 유지합니다.
 
 - `reports/index.html`
   - 리포트 목차 페이지
-  - 모델링 방법론, 리텐션 분석, 최종 전략 페이지로 이동
+  - EDA, 인터랙티브 요약, 모델링 방법론, 리텐션 분석, 최종 전략 페이지로 이동
+
+- `reports/eda_analysis.html`
+  - 01 EDA 핵심 결과
+  - 가정 > EDA 실험 > 세그먼트 결과 > 모델링 질문
+  - 타겟 분포, 행동 피처 차이, 요금제/기기/가입기간별 churn 패턴
+  - 이후 모델링과 retention 전략으로 이어지는 데이터 근거
+
+- `reports/interactive_report.html`
+  - 발표용 인터랙티브 요약 페이지
+  - 가정 > 실험 > 결과 > 최종 흐름을 사이드바로 탐색
+  - Top-k 비율 조정, 고객 프로파일 비교, KMeans/risk group 결과 확인
+  - 최종 retention action을 한 화면에서 설명
 
 - `reports/modeling_methodology.html`
+  - 04-07 노트북의 모델링/feature engineering 흐름
+  - 가정 > 실험 설계 > feature engineering 실험 > 모델 비교 결과 > 최종 모델 판단
   - 피처 선택 기준
   - feature engineering 실험 결과
   - 논문 기반 feature engineering 결과
@@ -157,9 +177,13 @@ uv run jupyter lab
 
 - `reports/top_risk_retention_strategy.html`
   - 발표용 최종 리텐션 전략
+  - 가정 > 실행 후보 > 외부 근거 > 비용/리스크 > 최종 운영 원칙
   - Mobile-only 저가 요금제와 중/장기 Basic 업그레이드 쿠폰 제안
+  - 비용 구조, 운영 리스크, A/B 테스트 설계
 
 - `reports/retention_analysis.html`
+  - 06 노트북의 risk score 해석 흐름
+  - 가정 > top-k 실험 > 세그먼트 결과 > 최종 타겟 근거
   - top-k targeting 결과
   - 상위 10% risk 고객 세분화
   - 성장기/장기 Basic 고객을 핵심 타겟으로 선정한 근거
@@ -169,19 +193,30 @@ uv run jupyter lab
 HTML 리포트 재생성:
 
 ```bash
+uv run python scripts/build_eda_report.py
+uv run python scripts/build_interactive_report.py
 uv run python scripts/build_modeling_methodology_report.py
 uv run python scripts/build_top_risk_retention_report.py
 ```
 
 ## Key Results
 
-모델링 단계에서는 Logistic Regression이 강한 기준선을 만들었고, 튜닝 및 앙상블 이후 Stacking이 가장 높은 PR AUC를 기록했습니다. 다만 단일 모델 대비 개선 폭은 작았습니다.
+모델링 단계에서는 Logistic Regression이 강한 기준선을 만들었고, 튜닝 및 앙상블 이후 Stacking이 가장 높은 PR AUC를 기록했습니다. 이후 feature engineering 실험에서도 개선 폭이 제한적이어서 최종 저장 모델은 **Stacking (original features)** 로 정리했습니다.
 
 따라서 최종 해석은 classification score보다 ranking 활용에 집중했습니다.
 
+Top-k 비율 산출 방식:
+
+- 최종 모델 `Stacking (original features)`가 산출한 `churn_probability`를 기준으로 test 고객 10,000명을 내림차순 정렬했습니다.
+- 상위 10%, 20%, 30%는 이 정렬 결과에서 각각 상위 1,000명, 2,000명, 3,000명을 절단한 구간입니다.
+- `Actual churn rate`는 해당 구간 내 실제 이탈자 수를 해당 구간 고객 수로 나눈 값입니다.
+- `Captured churners`는 해당 구간 내 실제 이탈자 수를 전체 test 이탈자 2,093명으로 나눈 값입니다.
+- `Lift`는 전체 test churn rate 대비 해당 구간 churn rate의 배율입니다.
+- threshold는 0/1 분류 성능 비교용이며, top-k ranking 구간 생성에는 사용하지 않았습니다.
+
 주요 결과:
 
-- 최종 후보 모델: Stacking
+- 최종 모델: Stacking (original features)
 - 최종 모델 PR AUC: 약 0.764
 - threshold 조정 후 f1: 약 0.694
 - 이탈 확률 상위 10% 고객의 실제 churn rate: 약 87.6%
@@ -193,7 +228,8 @@ Feature engineering 실험 결과:
 
 - 1차 feature engineering과 behavior feature engineering은 원본 feature set 대비 PR AUC와 top 10% lift를 일관되게 개선하지 못했습니다.
 - 논문 기반 feature engineering도 test F1, ROC AUC, PR AUC 기준으로 원본 feature set을 넘지 못했습니다.
-- 따라서 최종 risk score 산출은 원본 feature 기반 모델을 유지하고, engineered feature는 고위험 고객의 원인 해석과 campaign action 세분화에 활용하는 것이 적절합니다.
+- 따라서 최종 risk score 산출은 원본 feature 기반 Stacking 모델을 유지했습니다.
+- Engineered feature와 논문 기반 proxy feature는 최종 모델 입력으로 채택하지 않았으며, 성능 개선이 제한적이었다는 실험 근거와 고위험 고객 해석을 보조하는 참고 자료로 활용했습니다.
 
 ## Final Interpretation
 
@@ -228,6 +264,6 @@ Feature engineering 실험 결과:
 
 - `06` 노트북은 모델을 다시 학습하지 않습니다.
 - 먼저 `05` 노트북 마지막의 Risk Score 저장 섹션을 실행해야 합니다.
-- `07` 계열 노트북은 추가 feature engineering / optimization 실험 기록입니다. 최종 운영 결론은 원본 feature 기반 risk score를 유지하는 쪽입니다.
+- `07` 계열 노트북은 추가 feature engineering / optimization 실험 기록입니다. 최종 운영 결론은 `Stacking (original features)` 기반 risk score를 유지하는 쪽입니다.
 - `reports/` HTML 파일은 `outputs/` CSV를 읽어 생성한 정적 리포트입니다.
 - `catboost_info/`, `.venv/`, `.ipynb_checkpoints/`, `.DS_Store`, `.matplotlib-cache/` 등은 `.gitignore`로 제외합니다.
