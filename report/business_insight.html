@@ -286,7 +286,7 @@
                     <div style="flex:1;">
                         <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.75rem;">
                             <h3 style="margin:0; color:var(--accent-green);">Low Risk &mdash; 유지 관리</h3>
-                            <span class="badge badge-success">이탈률 5.4%</span>
+                            <span class="badge badge-success">이탈률 5.37%</span>
                         </div>
                         <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; font-size:0.875rem;">
                             <div>
@@ -378,7 +378,7 @@
         <div class="card" style="background:linear-gradient(135deg, rgba(229,9,20,0.08), rgba(16,185,129,0.05)); border:1px solid rgba(229,9,20,0.2); padding:2rem;">
             <div style="text-align:center; margin-bottom:1.5rem;">
                 <h3 style="font-size:1.2rem; margin-bottom:0.5rem;">합성 데이터 vs 실제 데이터</h3>
-                <p style="color:var(--text-muted); font-size:0.9rem; max-width:700px; margin:0 auto;">Netflix 데이터는 synthetic(합성) 데이터이므로 모델 성능에 한계가 있었습니다.<br>실제 구독 서비스인 KKBOX 데이터에 동일 파이프라인을 적용한 결과, 성능이 대폭 상승했습니다.</p>
+                <p style="color:var(--text-muted); font-size:0.9rem; max-width:700px; margin:0 auto;">Netflix 데이터는 synthetic(합성) 데이터이므로 모델 성능에 한계가 있었습니다.<br>실제 구독 서비스인 KKBOX 데이터에 동일 구조의 Stacking 파이프라인을 적용한 결과, 성능이 대폭 상승했습니다.</p>
             </div>
 
             <div class="table-wrapper" style="margin-bottom:1.5rem;">
@@ -412,6 +412,10 @@
                         </tr>
                     </tbody>
                 </table>
+            </div>
+
+            <div class="callout callout-info" style="margin-bottom:1.5rem;">
+                <p style="font-size:0.8rem; color:var(--text-muted); margin:0;"><strong>실험 조건 참고:</strong> 이 비교 실험에서 Netflix 기준값은 본 프로젝트의 메인 모델(ROC AUC 0.9067)과 학습 조건이 다릅니다. KKBOX와의 공정 비교를 위해 Netflix 데이터를 10,000건(이탈 30%)으로 리샘플링하고, LightGBM + XGBoost + Random Forest 기반 Stacking을 별도 학습했습니다.</p>
             </div>
 
             <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem; margin-bottom:1.5rem;">
