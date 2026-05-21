@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Background - Netflix Churn Prediction</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <a href="#main" class="skip-to-content">본문으로 건너뛰기</a>
+    <nav class="nav" role="navigation" aria-label="주 메뉴">
+        <div class="nav-inner">
+            <div class="nav-logo"><svg viewBox="0 0 18 24" width="18" height="24"><path d="M0 0h4.5v24H0z" fill="#E50914"/><path d="M13.5 0h4.5v24h-4.5z" fill="#E50914"/><path d="M0 0h4.5l13.5 24h-4.5z" fill="#E50914"/></svg>Churn Prediction</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Overview</a></li>
+                <li><a href="background.html" class="active">Background</a></li>
+                <li><a href="eda.html">EDA</a></li>
+                <li><a href="clustering.html">Clustering</a></li>
+                <li><a href="feature_engineering.html">Feature Engineering</a></li>
+                <li><a href="modeling.html">Modeling</a></li>
+                <li><a href="results.html">Results</a></li>
+                <li><a href="business_insight.html">Business Insight</a></li>
+            </ul>
+            <button class="nav-toggle" aria-label="메뉴 열기" aria-expanded="false" onclick="this.classList.toggle('open');this.previousElementSibling.classList.toggle('open');this.setAttribute('aria-expanded',this.classList.contains('open'))">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <div class="container" id="main">
+        <div class="hero">
+            <h1>왜 Netflix Churn인가</h1>
+            <p>거시 시장 데이터와 경쟁 구조에서 도출한 프로젝트 배경</p>
+        </div>
+
+        <div class="page-nav">
+            <a href="#macro">거시 시장 분석</a>
+            <a href="#netflix">넷플릭스 지배력</a>
+            <a href="#sources">자료 출처</a>
+        </div>
+
+        <!-- Section 1: Macro Market -->
+        <div class="section-header" id="macro">
+            <h2><span class="section-number">1</span>거시 시장 분석: OTT 시장의 포화</h2>
+            <p>국내 유료 구독형 OTT 이용률 추이 및 포화 신호 진단</p>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <h3>국내 유료 OTT 이용률 추이</h3>
+                <p style="color:var(--text-muted); margin-bottom:1.5rem; font-size:0.8rem;">과학기술정보통신부 · KOSIS 기준</p>
+                <div style="display:flex; align-items:flex-end; gap:1rem; padding:1.5rem 0; height:240px;">
+                    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;">
+                        <div style="font-size:0.85rem; font-weight:700; color:var(--accent-orange); margin-bottom:0.5rem;">72.3%</div>
+                        <div style="width:100%; height:72.3%; background:linear-gradient(180deg, rgba(245,158,11,0.3), rgba(245,158,11,0.1)); border-radius:8px 8px 0 0; border-top:3px solid var(--accent-orange);"></div>
+                        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">2022</div>
+                    </div>
+                    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;">
+                        <div style="font-size:0.85rem; font-weight:700; color:var(--accent-orange); margin-bottom:0.5rem;">76.8%</div>
+                        <div style="width:100%; height:76.8%; background:linear-gradient(180deg, rgba(245,158,11,0.4), rgba(245,158,11,0.15)); border-radius:8px 8px 0 0; border-top:3px solid var(--accent-orange);"></div>
+                        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">2023</div>
+                    </div>
+                    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;">
+                        <div style="font-size:0.85rem; font-weight:700; color:var(--accent); margin-bottom:0.5rem;">78.2%</div>
+                        <div style="width:100%; height:78.2%; background:linear-gradient(180deg, rgba(6,182,212,0.4), rgba(6,182,212,0.15)); border-radius:8px 8px 0 0; border-top:3px solid var(--accent);"></div>
+                        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">2024</div>
+                    </div>
+                    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%;">
+                        <div style="font-size:0.85rem; font-weight:700; color:var(--primary-light); margin-bottom:0.5rem;">79.1%</div>
+                        <div style="width:100%; height:79.1%; background:linear-gradient(180deg, rgba(229,9,20,0.4), rgba(229,9,20,0.15)); border-radius:8px 8px 0 0; border-top:3px solid var(--primary);"></div>
+                        <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.5rem;">2025</div>
+                    </div>
+                </div>
+                <div style="text-align:center; padding-top:0.75rem; border-top:1px dashed var(--border);">
+                    <span style="font-size:0.8rem; color:var(--text-muted);">전체 미디어 시장 내 OTT 침투율 — 80% 임계선 접근</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>시장 성숙기 진입 및 제로섬 구조</h3>
+                <div style="display:grid; gap:1.25rem; margin-top:0.5rem;">
+                    <div style="padding:1rem 1.25rem; background:rgba(229,9,20,0.06); border-radius:var(--radius-sm); border-left:3px solid var(--primary);">
+                        <div style="font-weight:700; font-size:0.9rem; margin-bottom:0.5rem; color:var(--text-primary);">성장 둔화의 증거</div>
+                        <p style="font-size:0.8rem; color:var(--text-secondary); line-height:1.7;">
+                            KOSIS 데이터 기준, 국내 유료 구독형 OTT 이용률은 <strong style="color:var(--primary-light);">79.1%</strong>에 도달하며 80% 임계선에 접근했습니다. 더 이상 무차별적 마케팅으로 신규 확보할 여지가 줄어든 <strong style="color:var(--primary-light);">제로섬 성숙기</strong>입니다.
+                        </p>
+                    </div>
+                    <div style="padding:1rem 1.25rem; background:rgba(245,158,11,0.06); border-radius:var(--radius-sm); border-left:3px solid var(--accent-orange);">
+                        <div style="font-weight:700; font-size:0.9rem; margin-bottom:0.5rem; color:var(--text-primary);">고객 확보 비용(CAC) 폭증</div>
+                        <p style="font-size:0.8rem; color:var(--text-secondary); line-height:1.7;">
+                            삼일PwC경영연구소 리포트에 따르면, 오리지널 콘텐츠 수급 경쟁과 출혈 마케팅으로 인해 <strong style="color:var(--accent-orange);">고객 확보 비용(CAC)이 기존 고객 유지 비용(CRC)보다 5배 이상</strong> 폭증했습니다.
+                        </p>
+                    </div>
+                    <div style="padding:1rem 1.25rem; background:rgba(16,185,129,0.06); border-radius:var(--radius-sm); border-left:3px solid var(--accent-green);">
+                        <div style="font-weight:700; font-size:0.9rem; margin-bottom:0.5rem; color:var(--text-primary);">패러다임 전환: 확보 → 방어</div>
+                        <p style="font-size:0.8rem; color:var(--text-secondary); line-height:1.7;">
+                            따라서 비용 효율성이 극히 떨어지는 신규 확장 전략을 지양하고, <strong style="color:var(--accent-green);">ML 예측 시스템을 도입해 핵심 가입자의 이탈(Churn)을 사전 차단</strong>하는 것이 비즈니스 마진을 보존하는 유일한 해법입니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="spacer-lg"></div>
+
+        <!-- Section 2: Netflix Dominance -->
+        <div class="section-header" id="netflix">
+            <h2><span class="section-number">2</span>왜 넷플릭스인가: 압도적 1위 플랫폼</h2>
+            <p>방송매체이용행태조사 기준 주요 OTT 서비스 유료 이용률 비교</p>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <h3>국내 주요 OTT 유료 이용률</h3>
+                <p style="color:var(--text-muted); margin-bottom:1.5rem; font-size:0.8rem;">방송통신위원회 미디어통계포털 기준</p>
+                <div class="bar-chart">
+                    <div class="bar-item">
+                        <div class="bar-label">넷플릭스</div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width:100%; background:var(--gradient-1);">46.7%</div>
+                        </div>
+                        <div class="bar-value" style="color:var(--primary-light);">46.7%</div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">티빙</div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width:27.8%; background:linear-gradient(90deg, #546e7a, #78909c);">13.0%</div>
+                        </div>
+                        <div class="bar-value" style="color:var(--text-muted);">13.0%</div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">유튜브 프리미엄</div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width:20.6%; background:linear-gradient(90deg, #90a4ae, #b0bec5);">9.6%</div>
+                        </div>
+                        <div class="bar-value" style="color:var(--text-muted);">9.6%</div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">쿠팡플레이</div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width:15.2%; background:linear-gradient(90deg, #b0bec5, #cfd8dc);">7.1%</div>
+                        </div>
+                        <div class="bar-value" style="color:var(--text-muted);">7.1%</div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">디즈니+</div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width:10.9%; background:linear-gradient(90deg, #b0bec5, #cfd8dc);">5.1%</div>
+                        </div>
+                        <div class="bar-value" style="color:var(--text-muted);">5.1%</div>
+                    </div>
+                    <div class="bar-item">
+                        <div class="bar-label">웨이브</div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width:8.8%; background:linear-gradient(90deg, #b0bec5, #cfd8dc);">4.1%</div>
+                        </div>
+                        <div class="bar-value" style="color:var(--text-muted);">4.1%</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>넷플릭스 데이터 스코핑의 타당성</h3>
+                <div style="display:grid; gap:1.25rem; margin-top:0.5rem;">
+                    <div style="padding:1rem 1.25rem; background:rgba(229,9,20,0.06); border-radius:var(--radius-sm); border-left:3px solid var(--primary);">
+                        <div style="font-weight:700; font-size:0.9rem; margin-bottom:0.5rem; color:var(--text-primary);">독보적 가입자 기반과 매출 밀도</div>
+                        <p style="font-size:0.8rem; color:var(--text-secondary); line-height:1.7;">
+                            넷플릭스는 <strong style="color:var(--primary-light);">46.7%</strong>라는 압도적 유료 이용률을 기록하며 2위 티빙(13.0%)의 <strong style="color:var(--primary-light);">3.5배</strong>를 상회합니다. 하위 경쟁 플랫폼 이용률을 전부 합산한 수치보다 비대해진 구조입니다.
+                        </p>
+                    </div>
+                    <div style="padding:1rem 1.25rem; background:rgba(6,182,212,0.06); border-radius:var(--radius-sm); border-left:3px solid var(--accent);">
+                        <div style="font-weight:700; font-size:0.9rem; margin-bottom:0.5rem; color:var(--text-primary);">매출 방어의 비즈니스 파급력</div>
+                        <p style="font-size:0.8rem; color:var(--text-secondary); line-height:1.7;">
+                            전체 시장 내 가입자당 평균 매출(ARPU)과 시청 데이터가 넷플릭스 한 곳에 결착되어 있으므로, 해당 비즈니스의 리텐션 모델을 구축하는 것이 <strong style="color:var(--accent);">가장 확실한 현금 효과</strong>를 가집니다.
+                        </p>
+                    </div>
+                    <div style="padding:1rem 1.25rem; background:rgba(16,185,129,0.06); border-radius:var(--radius-sm); border-left:3px solid var(--accent-green);">
+                        <div style="font-weight:700; font-size:0.9rem; margin-bottom:0.5rem; color:var(--text-primary);">1%의 이탈 방어 = 수십 배의 LTV 보존</div>
+                        <p style="font-size:0.8rem; color:var(--text-secondary); line-height:1.7;">
+                            Stacking/Voting 앙상블 시스템을 적용하여 <strong style="color:var(--accent-green);">넷플릭스 가입자의 이탈을 단 1%만 사전 차단하더라도, 하위 경쟁사 전체를 방어하는 것보다 수십 배에 달하는 LTV 매출 보존 효과</strong>를 달성할 수 있어 선제 데이터 분석의 실효성이 압도적입니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="spacer-lg"></div>
+
+        <!-- Section 3: Sources -->
+        <div class="section-header" id="sources">
+            <h2><span class="section-number">3</span>자료 출처</h2>
+        </div>
+
+        <div class="card">
+            <div style="display:grid; gap:0.75rem;">
+                <div style="display:flex; align-items:flex-start; gap:0.75rem; padding:0.75rem 1rem; background:rgba(229,9,20,0.04); border-radius:var(--radius-sm);">
+                    <span style="color:var(--primary-light); font-weight:700; flex-shrink:0;">1</span>
+                    <div>
+                        <div style="font-size:0.85rem; font-weight:600;">과학기술정보통신부 · KOSIS</div>
+                        <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.2rem;">「최근 1년 유료 구독형 OTT 이용 여부 (2025)」</div>
+                        <a href="https://kosis.kr/statHtml/statHtml.do?orgId=467&tblId=DT_467001_A001" target="_blank" style="font-size:0.75rem; color:var(--primary-light); text-decoration:none; border-bottom:1px dashed var(--primary-light);">KOSIS 국가통계포털 →</a>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:0.75rem; padding:0.75rem 1rem; background:rgba(6,182,212,0.04); border-radius:var(--radius-sm);">
+                    <span style="color:var(--accent); font-weight:700; flex-shrink:0;">2</span>
+                    <div>
+                        <div style="font-size:0.85rem; font-weight:600;">방송통신위원회 미디어통계포털</div>
+                        <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.2rem;">「유료로 이용 중인 온라인동영상서비스(OTT) (2025)」</div>
+                        <a href="https://www.mediastat.or.kr/statHtml/statHtml.do?orgId=005&tblId=DT_164002_B251" target="_blank" style="font-size:0.75rem; color:var(--primary-light); text-decoration:none; border-bottom:1px dashed var(--primary-light);">미디어통계포털 →</a>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:0.75rem; padding:0.75rem 1rem; background:rgba(245,158,11,0.04); border-radius:var(--radius-sm);">
+                    <span style="color:var(--accent-orange); font-weight:700; flex-shrink:0;">3</span>
+                    <div>
+                        <div style="font-size:0.85rem; font-weight:600;">삼일PwC경영연구소</div>
+                        <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.2rem;">「Platform Business Guidebook (2024), p.13-17 업종별 동향 분석」</div>
+                        <a href="https://www.pwc.com/kr/ko/insights/industry-focus/samilpwc_2024-platform-business-guidebook.pdf" target="_blank" style="font-size:0.75rem; color:var(--primary-light); text-decoration:none; border-bottom:1px dashed var(--primary-light);">삼일PwC PDF 보고서 →</a>
+                    </div>
+                </div>
+                <div style="display:flex; align-items:flex-start; gap:0.75rem; padding:0.75rem 1rem; background:rgba(16,185,129,0.04); border-radius:var(--radius-sm);">
+                    <span style="color:var(--accent-green); font-weight:700; flex-shrink:0;">4</span>
+                    <div>
+                        <div style="font-size:0.85rem; font-weight:600;">정보통신정책연구원(KISDI)</div>
+                        <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.2rem;">「유료 OTT 서비스 이용 행태 분석: 다중구독 및 계정 공유 행태를 중심으로」</div>
+                        <a href="https://www.kisdi.re.kr/report/view.do?key=m2101113025891&masterId=5086678&arrMasterId=5086678&artId=670096" target="_blank" style="font-size:0.75rem; color:var(--primary-light); text-decoration:none; border-bottom:1px dashed var(--primary-light);">KISDI 보고서 →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="callout callout-info">
+            <p><strong>결론:</strong> 시장 포화 + 확보 비용 폭증 + 넷플릭스의 압도적 점유율. 이 세 가지 거시 조건이 "넷플릭스 고객 이탈 예측"을 가장 비즈니스 임팩트가 큰 분석 주제로 만듭니다.</p>
+        </div>
+
+        <div style="text-align:center; margin-top:2rem;">
+            <a href="eda.html" class="cta-button">
+                EDA: 데이터 탐색 시작 →
+            </a>
+        </div>
+
+        <div class="footer">
+            <p>Netflix Customer Churn Prediction Project | SKN 30 Project 2</p>
+        </div>
+    </div>
+</body>
+</html>
