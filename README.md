@@ -19,6 +19,8 @@ Netflix-style user behavior data를 활용해 고객 세그먼트, 군집화, ch
 ```text
 .
 ├── data/
+│   ├── KKBOX/
+│   │   └── kkbox_netflix_format.csv
 │   └── user_behavior_50000/
 │       ├── netflix_user_behavior_churn_50000.csv
 │       └── netflix_user_behavior_churn_50000v2.csv
@@ -33,7 +35,8 @@ Netflix-style user behavior data를 활용해 고객 세그먼트, 군집화, ch
 │   ├── 07-2_churn_behavior_feature_engineering_pipeline.ipynb
 │   ├── 07-3_churn_auc_f1_optimization.ipynb
 │   ├── 07-4_churn_f1_optimization_light.ipynb
-│   └── 07-5_churn_paper_based_feature_engineering.ipynb
+│   ├── 07-5_churn_paper_based_feature_engineering.ipynb
+│   └── 08_kkbox_transfer_indomain.ipynb
 ├── outputs/
 │   ├── churn_risk_scores_test.csv
 │   ├── churn_model_final_result.csv
@@ -44,25 +47,21 @@ Netflix-style user behavior data를 활용해 고객 세그먼트, 군집화, ch
 ├── models/
 │   ├── final_churn_stacking_pipeline.joblib
 │   └── final_churn_model_metadata.json
-├── reports/
+├── report/
 │   ├── index.html
-│   ├── eda_analysis.html
-│   ├── interactive_report.html
-│   ├── modeling_methodology.html
-│   ├── retention_analysis.html
-│   └── top_risk_retention_strategy.html
-├── scripts/
-│   ├── build_eda_report.py
-│   ├── build_interactive_report.py
-│   ├── build_modeling_methodology_report.py
-│   └── build_top_risk_retention_report.py
-├── ott_churn_feature_engineering_plan.md
+│   ├── eda.html
+│   ├── clustering.html
+│   ├── feature_engineering.html
+│   ├── modeling.html
+│   ├── results.html
+│   ├── business_insight.html
+│   └── style.css
 ├── pyproject.toml
 ├── uv.lock
 └── README.md
 ```
 
-`outputs/` 폴더는 `05`와 `07` 계열 노트북의 저장 섹션을 실행하면 생성됩니다. `06` 노트북과 `reports/` HTML 리포트는 저장된 risk score와 성능 결과를 읽어 분석합니다.
+`outputs/` 폴더는 `05`와 `07` 계열 노트북의 저장 섹션을 실행하면 생성됩니다. `06` 노트북은 저장된 risk score와 성능 결과를 읽어 분석합니다.
 
 ## Environment
 
@@ -145,59 +144,23 @@ uv run jupyter lab
     - 가격 대비 가치, 추천/개인화 반응, 전환 위험, 구독 피로감, 몰아보기/콘텐츠 고갈 proxy 생성
     - 성능 개선보다는 해석용 진단 피처로 가치가 있음을 확인
 
-## HTML Reports
+12. `08_kkbox_transfer_indomain.ipynb`
+    - KKBOX 실제 구독 데이터에 동일 Stacking 파이프라인 적용
+    - 합성 데이터 대비 실제 데이터에서 성능 대폭 향상 확인 (ROC AUC 0.977, F1 0.881)
+    - 파이프라인의 실무 적용 가능성 검증
+
+## HTML Report
 
 분석 결과를 발표/공유하기 쉽게 HTML 리포트로 정리했습니다.
-각 HTML 페이지는 노트북 진행 방식에 맞춰 **가정 > 실험 > 결과 > 최종** 흐름을 유지합니다.
+`report/` 디렉토리에 정적 HTML 페이지로 구성되어 있으며, GitHub Pages로 배포됩니다.
 
-- `reports/index.html`
-  - 리포트 목차 페이지
-  - EDA, 인터랙티브 요약, 모델링 방법론, 리텐션 분석, 최종 전략 페이지로 이동
-
-- `reports/eda_analysis.html`
-  - 01 EDA 핵심 결과
-  - 가정 > EDA 실험 > 세그먼트 결과 > 모델링 질문
-  - 타겟 분포, 행동 피처 차이, 요금제/기기/가입기간별 churn 패턴
-  - 이후 모델링과 retention 전략으로 이어지는 데이터 근거
-
-- `reports/interactive_report.html`
-  - 발표용 인터랙티브 요약 페이지
-  - 가정 > 실험 > 결과 > 최종 흐름을 사이드바로 탐색
-  - Top-k 비율 조정, 고객 프로파일 비교, KMeans/risk group 결과 확인
-  - 최종 retention action을 한 화면에서 설명
-
-- `reports/modeling_methodology.html`
-  - 04-07 노트북의 모델링/feature engineering 흐름
-  - 가정 > 실험 설계 > feature engineering 실험 > 모델 비교 결과 > 최종 모델 판단
-  - 피처 선택 기준
-  - feature engineering 실험 결과
-  - 논문 기반 feature engineering 결과
-  - 모델링 흐름과 PR AUC / recall 중심 평가 이유
-  - threshold와 ranking을 분리해 해석한 이유
-
-- `reports/top_risk_retention_strategy.html`
-  - 발표용 최종 리텐션 전략
-  - 가정 > 실행 후보 > 외부 근거 > 비용/리스크 > 최종 운영 원칙
-  - Mobile-only 저가 요금제와 중/장기 Basic 업그레이드 쿠폰 제안
-  - 비용 구조, 운영 리스크, A/B 테스트 설계
-
-- `reports/retention_analysis.html`
-  - 06 노트북의 risk score 해석 흐름
-  - 가정 > top-k 실험 > 세그먼트 결과 > 최종 타겟 근거
-  - top-k targeting 결과
-  - 상위 10% risk 고객 세분화
-  - 성장기/장기 Basic 고객을 핵심 타겟으로 선정한 근거
-  - KMeans cluster와 risk group 결합 검증
-  - 실제 데이터 표와 그래프 기반 분석 근거
-
-HTML 리포트 재생성:
-
-```bash
-uv run python scripts/build_eda_report.py
-uv run python scripts/build_interactive_report.py
-uv run python scripts/build_modeling_methodology_report.py
-uv run python scripts/build_top_risk_retention_report.py
-```
+- `report/index.html` — 프로젝트 개요 및 섹션 네비게이션
+- `report/eda.html` — 탐색적 데이터 분석 (타겟 분포, 상관관계, 세그먼트별 이탈률)
+- `report/clustering.html` — KMeans 고객 군집화 (k=3, 고위험/일반/충성 군집)
+- `report/feature_engineering.html` — 피처 엔지니어링 실험 5회 (고정 임계값, 데이터 기반, 논문 기반)
+- `report/modeling.html` — 모델링 파이프라인 (Baseline → CV → Tuning → Ensemble → Threshold)
+- `report/results.html` — 모델 예측 결과 (Decile, Top-K, Risk Group, KMeans 교차 검증)
+- `report/business_insight.html` — 리텐션 전략, A/B 테스트 설계, KKBOX 검증
 
 ## Key Results
 
@@ -265,5 +228,5 @@ Feature engineering 실험 결과:
 - `06` 노트북은 모델을 다시 학습하지 않습니다.
 - 먼저 `05` 노트북 마지막의 Risk Score 저장 섹션을 실행해야 합니다.
 - `07` 계열 노트북은 추가 feature engineering / optimization 실험 기록입니다. 최종 운영 결론은 `Stacking (original features)` 기반 risk score를 유지하는 쪽입니다.
-- `reports/` HTML 파일은 `outputs/` CSV를 읽어 생성한 정적 리포트입니다.
+- `report/` HTML 파일은 직접 작성한 정적 리포트입니다.
 - `catboost_info/`, `.venv/`, `.ipynb_checkpoints/`, `.DS_Store`, `.matplotlib-cache/` 등은 `.gitignore`로 제외합니다.
