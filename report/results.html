@@ -228,6 +228,12 @@
             </div>
         </div>
 
+        <div class="card chart-img-wrap">
+            <h3>Decile별 실제 이탈률 (노트북 출력)</h3>
+            <img src="images/results_decile_churnrate.png" alt="Decile별 churn rate bar chart" class="chart-img">
+            <p class="chart-img-caption">예측 확률 상위 10%씩 10등분 — 상위 Decile일수록 실제 이탈률이 급격히 높음</p>
+        </div>
+
         <div class="divider"></div>
 
         <!-- Top-K Targeting -->
@@ -273,6 +279,19 @@
                     </div>
                     <div class="bar-value" style="color:var(--accent);">1.89x</div>
                 </div>
+            </div>
+        </div>
+
+        <div class="grid-2" style="margin-top:1.5rem;">
+            <div class="card chart-img-wrap">
+                <h3>Top-K Cumulative Churn Capture</h3>
+                <img src="images/results_topk_capture.png" alt="Top-K cumulative churn capture curve" class="chart-img">
+                <p class="chart-img-caption">상위 k% 타겟팅 시 전체 이탈자 포착률 — 곡선이 빨리 올라갈수록 효율적</p>
+            </div>
+            <div class="card chart-img-wrap">
+                <h3>Lift Chart</h3>
+                <img src="images/results_lift_chart.png" alt="Lift chart" class="chart-img">
+                <p class="chart-img-caption">랜덤 타겟팅 대비 모델 효율 — 상위 10%에서 4.19배 Lift</p>
             </div>
         </div>
 
@@ -498,6 +517,12 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div class="card chart-img-wrap">
+            <h3>Risk Group × KMeans Cluster 교차 히트맵</h3>
+            <img src="images/results_riskgroup_cluster_heatmap.png" alt="Risk Group × KMeans cluster 교차 히트맵" class="chart-img">
+            <p class="chart-img-caption">High Risk 고객의 98.9%가 KMeans Cluster 1(고위험 군집)에 집중</p>
         </div>
 
         <div class="callout callout-success">
