@@ -167,6 +167,12 @@
             </div>
         </div>
 
+        <div class="card chart-img-wrap">
+            <h3>상관관계 히트맵</h3>
+            <img src="images/eda_correlation_heatmap.png" alt="수치형 변수 상관관계 히트맵" class="chart-img">
+            <p class="chart-img-caption">수치형 변수 간 Pearson 상관계수 — days_since_last_login이 churned와 가장 강한 양의 상관</p>
+        </div>
+
         <div class="callout callout-info">
             <p><strong>핵심 인사이트:</strong> days_since_last_login이 상관계수 0.498로 가장 강한 양의 상관을 보입니다. 로그인 공백이 길수록 이탈 확률이 급격히 높아집니다. 반대로 시청량, 완료율, 추천 클릭률이 높을수록 이탈 확률이 낮아집니다.</p>
         </div>
@@ -283,6 +289,12 @@
                     <div class="bar-value" style="color:var(--accent-green);">16.2%</div>
                 </div>
             </div>
+        </div>
+
+        <div class="card chart-img-wrap">
+            <h3>수치형 변수 분포 비교 (churned=0 vs 1)</h3>
+            <img src="images/eda_numeric_distribution.png" alt="수치형 변수 distribution by churn" class="chart-img">
+            <p class="chart-img-caption">유지 고객(0)과 이탈 고객(1)의 수치형 변수 분포 — 분포가 갈라지는 변수가 핵심 이탈 신호</p>
         </div>
 
         <div class="spacer-lg"></div>
@@ -436,6 +448,12 @@
                     <div class="progress-bar"><div class="progress-fill" style="width:17%; background:var(--accent-green);"></div></div>
                 </div>
             </div>
+        </div>
+
+        <div class="card chart-img-wrap">
+            <h3>세그먼트별 이탈률 비교</h3>
+            <img src="images/eda_segment_churnrate.png" alt="세그먼트별 이탈률 bar chart" class="chart-img">
+            <p class="chart-img-caption">요금제, 기기, 유입 경로 등 주요 범주형 변수별 이탈률 비교</p>
         </div>
 
         <div class="callout callout-warning">

@@ -194,6 +194,12 @@
             </div>
         </div>
 
+        <div class="card chart-img-wrap">
+            <h3>Baseline 모델별 PR AUC 비교</h3>
+            <img src="images/modeling_model_comparison.png" alt="모델별 PR AUC 비교 bar chart" class="chart-img">
+            <p class="chart-img-caption">Dummy → LR → RF → LightGBM → XGBoost → CatBoost PR AUC 비교</p>
+        </div>
+
         <div class="callout callout-success">
             <p><strong>Baseline 결론:</strong> Logistic Regression이 PR AUC 0.7631, Recall 0.8208로 가장 강한 기준선을 형성했습니다. 부스팅 모델도 기본 설정에서는 LR을 명확히 넘지 못했습니다.</p>
         </div>
@@ -432,6 +438,12 @@
             </div>
         </div>
 
+        <div class="card chart-img-wrap">
+            <h3>Precision-Recall Curve</h3>
+            <img src="images/modeling_pr_curve.png" alt="PR Curve" class="chart-img">
+            <p class="chart-img-caption">최종 모델(Stacking)의 Precision-Recall 곡선 — PR AUC 0.7643</p>
+        </div>
+
         <!-- Ensemble Architecture -->
         <div class="grid-2">
             <div class="card">
@@ -543,6 +555,19 @@
                         <div class="progress-bar"><div class="progress-fill" style="width:86%; background:var(--text-muted);"></div></div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <div class="grid-2" style="margin-top:1.5rem;">
+            <div class="card chart-img-wrap">
+                <h3>Threshold Tuning Curve</h3>
+                <img src="images/modeling_threshold_tuning.png" alt="Threshold tuning curve" class="chart-img">
+                <p class="chart-img-caption">F1, Precision, Recall의 threshold별 변화</p>
+            </div>
+            <div class="card chart-img-wrap">
+                <h3>Confusion Matrix</h3>
+                <img src="images/modeling_confusion_matrix.png" alt="최종 모델 Confusion Matrix" class="chart-img">
+                <p class="chart-img-caption">Threshold 0.66 적용 후 TP/FP/FN/TN 분포</p>
             </div>
         </div>
 
