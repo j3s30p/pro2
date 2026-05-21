@@ -37,7 +37,6 @@
             <a href="#action-matrix">Campaign Action Matrix</a>
             <a href="#budget">예산별 타겟팅</a>
             <a href="#principles">캠페인 운영 원칙</a>
-            <a href="#abtest">A/B 테스트 설계</a>
             <a href="#kkbox">KKBOX 검증</a>
             <a href="#final">최종 결론</a>
         </div>
@@ -341,85 +340,9 @@
 
         <div class="divider"></div>
 
-        <!-- A/B Test Design -->
-        <div class="section-header" id="abtest">
-            <h2>5. A/B 테스트 설계</h2>
-            <p>제안된 리텐션 전략의 효과를 과학적으로 측정하기 위한 실험 설계</p>
-        </div>
-
-        <div class="card" style="border-left:4px solid var(--accent);">
-            <h3>실험 개요</h3>
-            <p class="text-md text-secondary mt-md mb-lg">상위 10% 고위험 고객(1,000명)을 대상으로 두 전략의 이탈 방지 효과를 검증합니다. 무작위 배정(RCT)으로 전략 효과와 자연 유지율을 분리합니다.</p>
-
-            <div class="ab-split">
-                <div class="ab-group" style="background:rgba(245,158,11,0.05); border-color:rgba(245,158,11,0.2);">
-                    <div class="flex items-center gap-md mb-base">
-                        <div class="icon-circle" style="background:rgba(245,158,11,0.2);">A</div>
-                        <div>
-                            <h3 style="margin:0; font-size:1rem; color:var(--accent-orange);">Treatment A</h3>
-                            <p class="text-xs text-muted">Standard 업그레이드 쿠폰</p>
-                        </div>
-                    </div>
-                    <div class="grid gap-sm">
-                        <div class="list-row"><span>대상</span><strong class="text-primary">Basic 고객 ~350명</strong></div>
-                        <div class="list-row"><span>혜택</span><strong class="text-primary">Standard 1개월 무료</strong></div>
-                        <div class="list-row"><span>관찰 기간</span><strong class="text-primary">쿠폰 종료 후 60일</strong></div>
-                        <div class="list-row" style="border-bottom:none;"><span>핵심 KPI</span><strong class="text-orange">30/60일 retention rate</strong></div>
-                    </div>
-                </div>
-
-                <div class="ab-divider">vs</div>
-
-                <div class="ab-group" style="background:rgba(6,182,212,0.05); border-color:rgba(6,182,212,0.2);">
-                    <div class="flex items-center gap-md mb-base">
-                        <div class="icon-circle" style="background:rgba(6,182,212,0.2);">B</div>
-                        <div>
-                            <h3 style="margin:0; font-size:1rem; color:var(--accent);">Treatment B</h3>
-                            <p class="text-xs text-muted">Mobile-only 저가 요금제 제안</p>
-                        </div>
-                    </div>
-                    <div class="grid gap-sm">
-                        <div class="list-row"><span>대상</span><strong class="text-primary">Mobile 고객 ~350명</strong></div>
-                        <div class="list-row"><span>혜택</span><strong class="text-primary">저가 Mobile 전용 플랜</strong></div>
-                        <div class="list-row"><span>관찰 기간</span><strong class="text-primary">전환 후 90일</strong></div>
-                        <div class="list-row" style="border-bottom:none;"><span>핵심 KPI</span><strong class="text-cyan">전환율 + ARPU 변화</strong></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="grid-3" style="margin-top:1.5rem;">
-            <div class="card" style="border-top:3px solid var(--text-muted); text-align:center;">
-                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-bottom:0.75rem;">CONTROL</div>
-                <h3 style="font-size:1.1rem; margin-bottom:0.75rem;">대조군 (~300명)</h3>
-                <p class="text-base text-secondary">아무 개입 없이<br>자연 이탈률을 측정합니다.<br>Treatment 효과의 기준선.</p>
-            </div>
-            <div class="card" style="border-top:3px solid var(--accent-green); text-align:center;">
-                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-bottom:0.75rem;">SUCCESS CRITERIA</div>
-                <h3 style="font-size:1.1rem; margin-bottom:0.75rem;">성공 기준</h3>
-                <p class="text-base text-secondary">Treatment 그룹의<br><strong>30일 retention rate</strong>이<br>대조군 대비 <strong>10%p 이상</strong> 높으면 성공.</p>
-            </div>
-            <div class="card" style="border-top:3px solid var(--accent-orange); text-align:center;">
-                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-bottom:0.75rem;">GUARDRAIL</div>
-                <h3 style="font-size:1.1rem; margin-bottom:0.75rem;">가드레일 지표</h3>
-                <p class="text-base text-secondary">쿠폰 종료 후<br><strong>다운그레이드 불만 티켓</strong><br>증가율이 5% 미만이어야 지속.</p>
-            </div>
-        </div>
-
-        <div class="callout callout-info" style="margin-top:1.5rem;">
-            <p><strong>측정 지표 정리:</strong></p>
-            <ul style="margin-top:0.5rem; padding-left:1.25rem; font-size:0.9rem; color:var(--text-secondary); list-style-type:disc;">
-                <li style="margin-bottom:0.35rem;"><strong class="text-primary">Primary</strong> — 30일 / 60일 retention rate (Treatment vs Control)</li>
-                <li style="margin-bottom:0.35rem;"><strong class="text-primary">Secondary</strong> — 시청 시간 변화, 로그인 빈도 변화, 요금제 전환율</li>
-                <li><strong class="text-primary">Guardrail</strong> — CS 티켓 증가율, ARPU 순변화, 다운그레이드 후 재이탈률</li>
-            </ul>
-        </div>
-
-        <div class="divider"></div>
-
         <!-- Real Data Validation -->
         <div class="section-header" id="kkbox">
-            <h2>6. 실제 데이터 검증: KKBOX</h2>
+            <h2>5. 실제 데이터 검증: KKBOX</h2>
             <p>동일한 Stacking 파이프라인을 실제 구독 서비스 데이터에 적용한 결과</p>
         </div>
 
@@ -490,54 +413,246 @@
 
         <!-- Final Summary -->
         <div class="section-header" id="final">
-            <h2>7. 프로젝트 최종 결론</h2>
+            <h2>6. 프로젝트 최종 결론</h2>
         </div>
 
-        <div class="card" style="background: linear-gradient(135deg, rgba(229, 9, 20, 0.1), rgba(236, 72, 153, 0.06)); border:1px solid rgba(229,9,20,0.2);">
-            <div style="text-align:center; margin-bottom:2rem;">
-                <h3 style="font-size:1.5rem; margin-bottom:0.5rem;">Netflix 고객 이탈 예측 & 리텐션 전략</h3>
-                <p>50,000명의 사용자 행동 데이터 기반 End-to-End ML Pipeline</p>
+        <!-- Project Journey -->
+        <div class="card" style="padding:2rem;">
+            <h3 class="text-center mb-lg">프로젝트 여정: 데이터에서 전략까지</h3>
+            <div class="pipeline">
+                <div class="pipeline-step active">
+                    <div class="text-2xl mb-sm">50K</div>
+                    <div class="font-semibold text-sm">데이터 탐색</div>
+                    <div class="text-xs text-muted">21% 이탈 확인</div>
+                </div>
+                <div class="pipeline-arrow">&rarr;</div>
+                <div class="pipeline-step active">
+                    <div class="text-2xl mb-sm">3</div>
+                    <div class="font-semibold text-sm">고객 군집</div>
+                    <div class="text-xs text-muted">행동만으로 분리</div>
+                </div>
+                <div class="pipeline-arrow">&rarr;</div>
+                <div class="pipeline-step active">
+                    <div class="text-2xl mb-sm">5</div>
+                    <div class="font-semibold text-sm">FE 실험</div>
+                    <div class="text-xs text-muted">원본 피처 채택</div>
+                </div>
+                <div class="pipeline-arrow">&rarr;</div>
+                <div class="pipeline-step active">
+                    <div class="text-2xl mb-sm">6</div>
+                    <div class="font-semibold text-sm">모델 비교</div>
+                    <div class="text-xs text-muted">Stacking 선정</div>
+                </div>
+                <div class="pipeline-arrow">&rarr;</div>
+                <div class="pipeline-step active" style="border-color:var(--accent-green); background:rgba(16,185,129,0.08);">
+                    <div class="text-2xl mb-sm" style="color:var(--accent-green);">2</div>
+                    <div class="font-semibold text-sm">실행 전략</div>
+                    <div class="text-xs text-muted">캠페인 설계</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Final Numbers -->
+        <div class="hero" style="margin-top:1.5rem; padding:3rem 2rem; background:linear-gradient(135deg, rgba(229,9,20,0.15), rgba(236,72,153,0.08)); border:1px solid rgba(229,9,20,0.25);">
+            <h1 style="font-size:2rem; margin-bottom:1.5rem;">Netflix 고객 이탈 예측 & 리텐션 전략</h1>
+            <p style="margin-bottom:2.5rem;">50,000명의 사용자 행동 데이터 기반 End-to-End ML Pipeline</p>
+
+            <div class="grid-4" style="max-width:900px; margin:0 auto;">
+                <div class="stat-card">
+                    <div class="stat-value gradient-2">0.764</div>
+                    <div class="stat-label">PR AUC</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value gradient-1">4.19x</div>
+                    <div class="stat-label">Top 10% Lift</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value gradient-3">87.6%</div>
+                    <div class="stat-label">Top 10% 이탈률</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value gradient-2">67.85%</div>
+                    <div class="stat-label">Top 20% 포착률</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Insights + Lessons -->
+        <div class="grid-2" style="margin-top:1.5rem; gap:1.5rem;">
+            <div class="card">
+                <h3 style="color:var(--primary-light); margin-bottom:1.25rem;">핵심 인사이트</h3>
+                <div class="text-md text-secondary" style="display:grid; gap:0.75rem;">
+                    <div style="padding-left:1rem; border-left:3px solid var(--accent-red);">
+                        <strong class="text-primary">이탈의 핵심 신호:</strong> 최근 로그인 공백이 가장 강한 이탈 예측 변수 (상관계수 0.498)
+                    </div>
+                    <div style="padding-left:1rem; border-left:3px solid var(--accent-orange);">
+                        <strong class="text-primary">고위험 프로파일:</strong> Basic(72.7%) + Mobile(52.5%) + 저시청 + 장기 미접속
+                    </div>
+                    <div style="padding-left:1rem; border-left:3px solid var(--accent-green);">
+                        <strong class="text-primary">실용적 가치:</strong> 상위 20%만 타겟팅해도 전체 이탈자의 2/3 포착
+                    </div>
+                    <div style="padding-left:1rem; border-left:3px solid var(--accent);">
+                        <strong class="text-primary">교차 검증:</strong> Risk Group과 KMeans 군집의 98.9% 일치
+                    </div>
+                    <div style="padding-left:1rem; border-left:3px solid var(--primary);">
+                        <strong class="text-primary">전이 검증:</strong> 동일 파이프라인이 KKBOX 실제 데이터에서 ROC AUC 0.977 달성
+                    </div>
+                </div>
             </div>
 
-            <div class="grid-2" style="gap:2rem;">
-                <div>
-                    <h3 style="color:var(--primary-light); margin-bottom:1rem; font-size:1rem;">모델 성과</h3>
-                    <div style="font-size:0.9rem; color:var(--text-secondary);">
-                        <div style="padding:0.5rem 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between;">
-                            <span>Final Model</span><strong style="color:var(--text-primary);">Stacking Ensemble</strong>
-                        </div>
-                        <div style="padding:0.5rem 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between;">
-                            <span>PR AUC</span><strong style="color:var(--primary-light);">0.7643</strong>
-                        </div>
-                        <div style="padding:0.5rem 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between;">
-                            <span>F1 Score</span><strong style="color:var(--accent-green);">0.6942</strong>
-                        </div>
-                        <div style="padding:0.5rem 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between;">
-                            <span>상위 10% Lift</span><strong style="color:var(--accent-red);">4.19x</strong>
-                        </div>
-                        <div style="padding:0.5rem 0; display:flex; justify-content:space-between;">
-                            <span>상위 20% 포착률</span><strong style="color:var(--accent-orange);">67.85%</strong>
-                        </div>
+            <div class="card">
+                <h3 style="color:var(--secondary); margin-bottom:1.25rem;">프로젝트에서 배운 것</h3>
+                <div class="text-md text-secondary" style="display:grid; gap:0.75rem;">
+                    <div style="padding-left:1rem; border-left:3px solid var(--text-muted);">
+                        <strong class="text-primary">피처 엔지니어링의 한계:</strong> 5회 실험 모두 원본을 넘지 못했다. 강한 원본 변수가 있을 때 파생변수는 노이즈가 될 수 있다.
+                    </div>
+                    <div style="padding-left:1rem; border-left:3px solid var(--text-muted);">
+                        <strong class="text-primary">단순함의 힘:</strong> Logistic Regression이 PR AUC 0.763으로 부스팅 모델과 거의 동등했다. 데이터의 패턴이 선형일 때 복잡도는 답이 아니다.
+                    </div>
+                    <div style="padding-left:1rem; border-left:3px solid var(--text-muted);">
+                        <strong class="text-primary">분류보다 순위:</strong> 0/1 분류 정확도보다 risk ranking이 캠페인 실행에 더 유용하다.
+                    </div>
+                    <div style="padding-left:1rem; border-left:3px solid var(--text-muted);">
+                        <strong class="text-primary">합성 데이터의 가치:</strong> 완벽한 성능보다 분석 흐름과 의사결정 구조를 설계하는 데 의미가 있다.
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Execution Roadmap -->
+        <div class="card" style="margin-top:1.5rem; border:1px solid rgba(229,9,20,0.2); background:linear-gradient(135deg, rgba(229,9,20,0.06), rgba(6,182,212,0.04));">
+            <h3 class="text-center mb-lg">실행 로드맵</h3>
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem; text-align:center;">
+                <div style="padding:1.25rem; background:rgba(239,68,68,0.08); border-radius:var(--radius); border-top:3px solid var(--accent-red);">
+                    <div class="text-xs font-bold text-muted" style="margin-bottom:0.5rem;">PHASE 1</div>
+                    <div class="font-bold text-base" style="margin-bottom:0.5rem;">Pilot</div>
+                    <p class="text-sm text-secondary">상위 10% 고위험<br>고객 1,000명 대상<br>리텐션 캠페인 실행</p>
+                </div>
+                <div style="padding:1.25rem; background:rgba(245,158,11,0.08); border-radius:var(--radius); border-top:3px solid var(--accent-orange);">
+                    <div class="text-xs font-bold text-muted" style="margin-bottom:0.5rem;">PHASE 2</div>
+                    <div class="font-bold text-base" style="margin-bottom:0.5rem;">Measure</div>
+                    <p class="text-sm text-secondary">30/60일 retention<br>측정 및 가드레일<br>지표 모니터링</p>
+                </div>
+                <div style="padding:1.25rem; background:rgba(6,182,212,0.08); border-radius:var(--radius); border-top:3px solid var(--accent);">
+                    <div class="text-xs font-bold text-muted" style="margin-bottom:0.5rem;">PHASE 3</div>
+                    <div class="font-bold text-base" style="margin-bottom:0.5rem;">Scale</div>
+                    <p class="text-sm text-secondary">효과 확인 시<br>상위 20~30%로<br>캠페인 확장</p>
+                </div>
+                <div style="padding:1.25rem; background:rgba(16,185,129,0.08); border-radius:var(--radius); border-top:3px solid var(--accent-green);">
+                    <div class="text-xs font-bold text-muted" style="margin-bottom:0.5rem;">PHASE 4</div>
+                    <div class="font-bold text-base" style="margin-bottom:0.5rem;">Automate</div>
+                    <p class="text-sm text-secondary">모델 재학습 주기화<br>risk score 자동 갱신<br>캠페인 자동 트리거</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature Limitations & Future Direction -->
+        <div class="card" style="margin-top:1.5rem; border:1px solid rgba(6,182,212,0.2); background:linear-gradient(135deg, rgba(6,182,212,0.06), rgba(16,185,129,0.04));">
+            <h3 class="text-center mb-lg">피처 한계와 확장 방향</h3>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:2rem;">
+                <!-- 현재 피처의 강점 -->
                 <div>
-                    <h3 style="color:var(--secondary); margin-bottom:1rem; font-size:1rem;">핵심 인사이트</h3>
-                    <div style="font-size:0.9rem; color:var(--text-secondary);">
-                        <div style="margin-bottom:0.75rem; padding-left:1rem; border-left:3px solid var(--accent-red);">
-                            <strong style="color:var(--text-primary);">이탈의 핵심 신호:</strong> 최근 로그인 공백이 가장 강한 이탈 예측 변수
+                    <div class="flex items-center gap-sm mb-base">
+                        <div class="icon-circle" style="background:var(--accent); width:28px; height:28px; font-size:0.85rem;">✓</div>
+                        <h4 style="margin:0; color:var(--accent);">현재 피처로 확인한 것</h4>
+                    </div>
+                    <p class="text-sm text-secondary" style="line-height:1.7; margin-bottom:1rem;">
+                        본 프로젝트의 데이터는 고객의 <strong class="text-primary">현재 상태를 요약한 정적 피처</strong> 중심으로 구성되어 있다.
+                        최근 로그인 공백, 주간 평균 시청 시간, 완료율, 추천 클릭률, 요금제, 주 사용 기기 등 특정 시점의 고객 상태를 파악하는 데 유용했다.
+                    </p>
+                    <div style="display:flex; flex-wrap:wrap; gap:0.5rem;">
+                        <span class="badge badge-primary">days_since_last_login</span>
+                        <span class="badge badge-primary">avg_watch_time</span>
+                        <span class="badge badge-primary">completion_rate</span>
+                        <span class="badge badge-primary">recommendation_click_rate</span>
+                    </div>
+                    <p class="text-xs text-muted" style="margin-top:0.75rem; line-height:1.6;">
+                        이 변수들이 모델의 핵심 이탈 신호로 작동하며, 최근 접속이 줄고 시청량과 추천 반응이 낮은 고객이 이탈 위험이 높다는 패턴을 확인했다.
+                    </p>
+                </div>
+
+                <!-- 정적 피처의 한계 -->
+                <div>
+                    <div class="flex items-center gap-sm mb-base">
+                        <div class="icon-circle" style="background:var(--accent-orange); width:28px; height:28px; font-size:0.85rem;">!</div>
+                        <h4 style="margin:0; color:var(--accent-orange);">정적 피처만으로는 부족한 것</h4>
+                    </div>
+                    <p class="text-sm text-secondary" style="line-height:1.7; margin-bottom:1rem;">
+                        현재 시청 시간이 낮은 고객이 <strong class="text-primary">원래부터 적게 보던 고객</strong>인지,
+                        <strong class="text-primary">최근 급격히 사용량이 줄어든 고객</strong>인지 구분할 수 없다.
+                        이 차이는 리텐션 전략을 설계할 때 매우 중요하다.
+                    </p>
+                    <div style="background:rgba(245,158,11,0.08); border-radius:var(--radius); padding:1rem; border-left:3px solid var(--accent-orange);">
+                        <p class="text-sm" style="margin:0; line-height:1.7;">
+                            행동이 <strong>어떤 흐름으로 악화되었는지</strong>, 즉 이탈 위험이 높아지는 <strong>과정</strong>을 정적 피처만으로는 충분히 설명하기 어렵다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="divider" style="margin:1.5rem 0;"></div>
+
+            <!-- 시계열 확장 피처 -->
+            <div>
+                <div class="flex items-center gap-sm mb-base">
+                    <div class="icon-circle" style="background:var(--accent-green); width:28px; height:28px; font-size:0.85rem;">→</div>
+                    <h4 style="margin:0; color:var(--accent-green);">시계열·이벤트 로그 피처가 추가된다면</h4>
+                </div>
+                <p class="text-sm text-secondary" style="line-height:1.7; margin-bottom:1.25rem;">
+                    실제 서비스 환경에서 시계열 기반 행동 로그가 추가된다면, 고객이 이탈 위험 상태로 이동하는 과정을 더 정밀하게 파악할 수 있다.
+                </p>
+                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:0.75rem;">
+                    <div style="background:rgba(16,185,129,0.06); border-radius:var(--radius); padding:1rem;">
+                        <div class="text-xs font-bold text-muted" style="margin-bottom:0.5rem;">행동 변화 추적</div>
+                        <div class="text-sm text-secondary" style="line-height:1.6;">
+                            최근 4주간 시청 시간 변화율<br>
+                            접속 빈도 감소율<br>
+                            세션 수 변화 추이
                         </div>
-                        <div style="margin-bottom:0.75rem; padding-left:1rem; border-left:3px solid var(--accent-orange);">
-                            <strong style="color:var(--text-primary);">고위험 프로파일:</strong> Basic + Mobile + 낮은 시청량 + 긴 미접속
+                    </div>
+                    <div style="background:rgba(16,185,129,0.06); border-radius:var(--radius); padding:1rem;">
+                        <div class="text-xs font-bold text-muted" style="margin-bottom:0.5rem;">이벤트 로그</div>
+                        <div class="text-sm text-secondary" style="line-height:1.6;">
+                            마지막 시청일 / 추천 클릭일<br>
+                            검색 및 찜 이력<br>
+                            결제 실패 여부
                         </div>
-                        <div style="margin-bottom:0.75rem; padding-left:1rem; border-left:3px solid var(--accent-green);">
-                            <strong style="color:var(--text-primary);">실용적 가치:</strong> 상위 20%만 타겟팅해도 이탈자의 2/3 포착
-                        </div>
-                        <div style="padding-left:1rem; border-left:3px solid var(--primary);">
-                            <strong style="color:var(--text-primary);">모델 특성:</strong> 선형 모델이 강한 기준선, 앙상블로 소폭 개선
+                    </div>
+                    <div style="background:rgba(16,185,129,0.06); border-radius:var(--radius); padding:1rem;">
+                        <div class="text-xs font-bold text-muted" style="margin-bottom:0.5rem;">구독 이력</div>
+                        <div class="text-sm text-secondary" style="line-height:1.6;">
+                            요금제 변경 이력<br>
+                            캠페인 반응 이력<br>
+                            해지·재가입 패턴
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div class="divider" style="margin:1.5rem 0;"></div>
+
+            <!-- 결론 메시지 -->
+            <div style="background:rgba(6,182,212,0.08); border-radius:var(--radius); padding:1.25rem 1.5rem; border-left:3px solid var(--accent);">
+                <p class="text-sm" style="margin:0; line-height:1.8;">
+                    본 프로젝트의 모델은 현재 주어진 정적 피처만으로도 이탈 위험 고객을 효과적으로 우선순위화할 수 있었다.
+                    그러나 실제 기업 데이터에서는 시계열·이벤트 로그 피처를 함께 활용함으로써
+                    <strong class="text-primary">"누가 이탈할 가능성이 높은가"</strong>를 넘어
+                    <strong class="text-primary">"왜 이탈 위험이 높아졌는가"</strong>와
+                    <strong class="text-primary">"어떤 개입이 효과적인가"</strong>까지 더 구체적으로 분석할 수 있을 것이다.
+                </p>
+            </div>
+        </div>
+
+        <!-- Closing -->
+        <div style="text-align:center; margin-top:3rem; padding:2rem;">
+            <p class="text-md text-secondary" style="max-width:700px; margin:0 auto; line-height:1.8;">
+                이 프로젝트는 <strong class="text-primary">"누가 떠나는가"</strong>에서 시작해<br>
+                <strong class="text-primary">"누구를, 어떻게, 얼마나 잡을 것인가"</strong>까지 도달했습니다.<br><br>
+                모델은 완벽한 분류기가 아니라, <strong class="text-primary">의사결정을 돕는 도구</strong>입니다.<br>
+                데이터가 말하는 우선순위에 따라 자원을 집중할 때,<br>
+                리텐션 캠페인은 비로소 효율적이 됩니다.
+            </p>
         </div>
 
         <div class="footer">
