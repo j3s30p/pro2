@@ -1,13 +1,39 @@
 # Netflix User Churn Analysis
 
+**Report:** https://j3s30p.github.io/pro2/
+
+![Python](https://img.shields.io/badge/Python-3.14-3776AB?style=flat-square&logo=python&logoColor=white)
+![Pandas](https://img.shields.io/badge/Pandas-Data%20Analysis-150458?style=flat-square&logo=pandas&logoColor=white)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-F7931E?style=flat-square&logo=scikitlearn&logoColor=white)
+![LightGBM](https://img.shields.io/badge/LightGBM-Boosting-02569B?style=flat-square)
+![XGBoost](https://img.shields.io/badge/XGBoost-Boosting-EC4E20?style=flat-square)
+![CatBoost](https://img.shields.io/badge/CatBoost-Boosting-FFCC00?style=flat-square)
+![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-F37626?style=flat-square&logo=jupyter&logoColor=white)
+![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Report-222222?style=flat-square&logo=githubpages&logoColor=white)
+
 Netflix-style user behavior 데이터를 활용해 고객 이탈을 예측하고, 예측 확률을 기반으로 리텐션 캠페인 우선순위를 설계한 프로젝트입니다.
 
 단순히 churn 여부를 0/1로 맞추는 것보다, 제한된 마케팅 예산 안에서 **누구를 먼저 잡아야 하는지**를 정하는 risk ranking 관점에 초점을 맞췄습니다.
 
-정적 HTML 리포트는 GitHub Pages로 배포됩니다.
+## Quick Summary
 
-- Report: https://j3s30p.github.io/pro2/
-- Repository: https://github.com/j3s30p/pro2
+- 최종 모델: Stacking (original features)
+- 최종 PR AUC: 약 0.764
+- Top 10% Lift: 약 4.19x
+- KKBOX 실제 데이터 검증: ROC AUC 약 0.977, F1 약 0.881
+
+```text
+EDA -> Clustering -> Modeling -> Risk Ranking -> Retention Strategy -> KKBOX Validation
+```
+
+## Team
+
+| 이름 | GitHub | 역할 |
+| --- | --- | --- |
+| 박제섭 | [j3s30p](https://github.com/j3s30p) | 넷플릭스 ML, 팀장 |
+| 김진남 | [hikago](https://github.com/hikago) | KKBOX ML, 부팀장 |
+| 장규원 | [gyuwon02](https://github.com/gyuwon02) | 비지도학습 클러스터링, 데이터 EDA |
+| 김동휘 | [star9906](https://github.com/star9906) | 논문 기반 피처 엔지니어링, 데이터 전처리 |
 
 ## Project Goal
 
@@ -267,12 +293,14 @@ Risk group 운영 방향:
 - Mobile 사용 비중이 높은 가격 민감 고객에게는 **Mobile-only 저가 요금제**를 제안해 완전 해지를 저가 유지로 전환합니다.
 - 성장기/장기 Basic 고객 중 risk score가 높은 고객에게는 **Standard 업그레이드 1개월 쿠폰**을 제공해 상위 요금제 가치를 체험하게 합니다.
 
-외부 리텐션 사례와도 방향이 일치합니다. Harvard Business Review는 모든 고객을 동일하게 유지하려 하기보다 장기 가치가 높은 고객을 구분해 관리하는 것이 중요하다고 설명합니다. 고객 유지 관련 통계에서도 개인화된 경험과 충성도 프로그램, 고객 경험 개선이 이탈 방지에 중요한 요소로 제시됩니다.
+외부 리텐션 사례와도 방향이 일치합니다. Harvard Business Review는 모든 고객을 동일하게 유지하려 하기보다 장기 가치가 높은 고객을 구분해 관리하는 것이 중요하다고 설명합니다. 또한 OTT 구독 해지 관련 논문에서 제시된 가격 민감도, 추천/개인화 반응, 전환 위험, 구독 피로감 요인을 proxy feature로 구현해 고위험 고객 해석에 활용했습니다.
 
 참고 자료:
 
 - HBR: https://hbr.org/2014/10/the-value-of-keeping-the-right-customers
-- QR TIGER: https://www.qrcode-tiger.com/ko/customer-retention-statistics
+- OTT 서비스의 이용자는 왜 구독을 해지하는가?: https://www.dbpia.co.kr/pdf/pdfAiChatView.do?nodeId=NODE11396704&width=1470
+- 구독 피로감과 가격 민감도가 OTT 서비스의 구독 해지 의도에 미치는 영향: 사용자 경험(UX)의 조절 효과를 중심으로: https://www.dbpia.co.kr/pdf/pdfAiChatView.do?nodeId=NODE12538822&width=1151
+- OTT 플랫폼 유형에 따른 구독 해지 결정요인 분석: 전략적 포지셔닝을 위한 함의: https://www.kci.go.kr/kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART003293403
 
 ## KKBOX Validation
 
