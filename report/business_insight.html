@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netflix Churn Prediction - Business Insight</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-inner">
+            <div class="nav-logo">Netflix Churn Prediction</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Overview</a></li>
+                <li><a href="eda.html">EDA</a></li>
+                <li><a href="clustering.html">Clustering</a></li>
+                <li><a href="feature_engineering.html">Feature Engineering</a></li>
+                <li><a href="modeling.html">Modeling</a></li>
+                <li><a href="results.html">Results</a></li>
+                <li><a href="business_insight.html" class="active">Business Insight</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="hero">
+            <h1>이탈 방지 전략 & 실행 계획</h1>
+            <p>어떻게 잡을 것인가 — 데이터 기반 리텐션 캠페인 설계</p>
+        </div>
+
+        <!-- Core Retention Strategy -->
+        <div class="section-header">
+            <h2>1. 핵심 리텐션 전략 제안</h2>
+            <p>고위험 고객 프로파일에서 도출한 두 가지 실행 전략</p>
+        </div>
+
+        <div class="card" style="background:linear-gradient(135deg, rgba(99,102,241,0.08), rgba(236,72,153,0.05)); border:1px solid rgba(99,102,241,0.25); padding:2rem;">
+            <div style="text-align:center; margin-bottom:2rem;">
+                <h3 style="font-size:1.3rem; margin-bottom:0.5rem;">전략의 핵심 논리</h3>
+                <p style="color:var(--text-muted); font-size:0.9rem; max-width:700px; margin:0 auto;">고위험 고객의 72.7%가 Basic, 52.5%가 Mobile 사용자입니다.<br>이 두 축을 기반으로 <strong>완전 해지를 막는</strong> 맞춤형 전략을 설계합니다.</p>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:1.5rem; align-items:stretch;">
+                <!-- Strategy 1 -->
+                <div style="padding:1.5rem; background:rgba(245,158,11,0.06); border-radius:12px; border:1px solid rgba(245,158,11,0.2);">
+                    <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:1.25rem;">
+                        <div style="width:40px; height:40px; border-radius:50%; background:rgba(245,158,11,0.2); display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0;">1</div>
+                        <div>
+                            <h3 style="margin:0; font-size:1rem; color:var(--accent-orange);">Standard 업그레이드 쿠폰</h3>
+                            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.15rem;">가치 체험 &rarr; 이탈 방지</p>
+                        </div>
+                    </div>
+                    <div style="display:grid; gap:0.75rem; margin-bottom:1.25rem;">
+                        <div style="padding:0.6rem 0.75rem; background:rgba(245,158,11,0.04); border-radius:6px;">
+                            <div style="font-size:0.7rem; color:var(--text-muted);">대상</div>
+                            <div style="font-size:0.85rem; font-weight:600; margin-top:0.15rem;">성장기/장기 Basic 고객</div>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">risk score 상위 — 약 586명 (상위 10% 내 58.6%)</div>
+                        </div>
+                        <div style="padding:0.6rem 0.75rem; background:rgba(245,158,11,0.04); border-radius:6px;">
+                            <div style="font-size:0.7rem; color:var(--text-muted);">혜택</div>
+                            <div style="font-size:0.85rem; font-weight:600; margin-top:0.15rem;">Standard 요금제 1개월 무료 업그레이드</div>
+                        </div>
+                        <div style="padding:0.6rem 0.75rem; background:rgba(245,158,11,0.04); border-radius:6px;">
+                            <div style="font-size:0.7rem; color:var(--text-muted);">종료 후</div>
+                            <div style="font-size:0.85rem; font-weight:600; margin-top:0.15rem;">원래 요금제 복귀 또는 상위 유지 선택</div>
+                        </div>
+                    </div>
+                    <p style="font-size:0.8rem; color:var(--text-secondary); line-height:1.5;">상위 요금제의 가치(HD 화질, 다중 디바이스)를 체험하게 하여 Basic에서 느꼈던 불만을 해소하고, 해지 대신 유지 또는 업그레이드로 전환합니다.</p>
+                </div>
+
+                <!-- Divider -->
+                <div style="display:flex; align-items:center;">
+                    <div style="width:1px; height:100%; background:linear-gradient(180deg, transparent, var(--border), transparent);"></div>
+                </div>
+
+                <!-- Strategy 2 -->
+                <div style="padding:1.5rem; background:rgba(6,182,212,0.06); border-radius:12px; border:1px solid rgba(6,182,212,0.2);">
+                    <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:1.25rem;">
+                        <div style="width:40px; height:40px; border-radius:50%; background:rgba(6,182,212,0.2); display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0;">2</div>
+                        <div>
+                            <h3 style="margin:0; font-size:1rem; color:var(--accent);">Mobile-only 저가 요금제</h3>
+                            <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0.15rem;">완전 해지 &rarr; 저가 유지 전환</p>
+                        </div>
+                    </div>
+                    <div style="display:grid; gap:0.75rem; margin-bottom:1.25rem;">
+                        <div style="padding:0.6rem 0.75rem; background:rgba(6,182,212,0.04); border-radius:6px;">
+                            <div style="font-size:0.7rem; color:var(--text-muted);">대상</div>
+                            <div style="font-size:0.85rem; font-weight:600; margin-top:0.15rem;">Mobile 사용 비중이 높은 가격 민감 고객</div>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">고위험 고객의 52.5%가 Mobile 사용자</div>
+                        </div>
+                        <div style="padding:0.6rem 0.75rem; background:rgba(6,182,212,0.04); border-radius:6px;">
+                            <div style="font-size:0.7rem; color:var(--text-muted);">혜택</div>
+                            <div style="font-size:0.85rem; font-weight:600; margin-top:0.15rem;">모바일 전용 저가 요금제 제안</div>
+                        </div>
+                        <div style="padding:0.6rem 0.75rem; background:rgba(6,182,212,0.04); border-radius:6px;">
+                            <div style="font-size:0.7rem; color:var(--text-muted);">목표</div>
+                            <div style="font-size:0.85rem; font-weight:600; margin-top:0.15rem;">해지 대신 저가 구독으로 전환 유도</div>
+                        </div>
+                    </div>
+                    <p style="font-size:0.8rem; color:var(--text-secondary); line-height:1.5;">모바일에서만 사용할 수 있지만 더 저렴한 요금제를 제안하여, 가격 부담으로 인한 완전 해지를 저가 유지로 전환합니다. Netflix가 인도에서 실제 운영 중인 Mobile Plan을 참고합니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Strategy Evidence -->
+        <div class="card" style="margin-top:1.5rem;">
+            <h3>전략 근거: Netflix 실제 사례</h3>
+            <p style="color:var(--text-muted); margin-top:0.5rem; margin-bottom:1.5rem;">
+                두 전략 모두 Netflix가 실제로 운영했거나 운영 중인 프로모션 메커니즘을 기반으로 합니다.
+                신규 유입용 프로모션을 <strong>기존 고위험 고객 retention</strong>에 재해석 적용한 것이 핵심입니다.
+            </p>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                <div style="padding:1rem; background:rgba(245,158,11,0.04); border-radius:8px; border-left:3px solid var(--accent-orange);">
+                    <div style="font-size:0.8rem; font-weight:600; margin-bottom:0.5rem;">호주 — 무료 체험 폐지 후 업그레이드 전환</div>
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.75rem;">Netflix는 호주에서 30일 무료 체험을 폐지하고, 대신 한시적 요금제 업그레이드 프로모션으로 전환했습니다.</p>
+                    <a href="https://www.techradar.com/news/netflix-has-dropped-its-30-day-free-trial-period-in-australia" target="_blank" style="font-size:0.75rem; color:var(--primary-light); text-decoration:none; border-bottom:1px dashed var(--primary-light);">TechRadar: Netflix dropped free trial in Australia</a>
+                </div>
+                <div style="padding:1rem; background:rgba(6,182,212,0.04); border-radius:8px; border-left:3px solid var(--accent);">
+                    <div style="font-size:0.8rem; font-weight:600; margin-bottom:0.5rem;">인도 — 30일 무료 업그레이드 제공</div>
+                    <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:0.75rem;">Netflix 인도에서 가입자 대상 Standard/Premium 30일 무료 업그레이드를 운영. Mobile-only 요금제도 별도로 운영 중입니다.</p>
+                    <a href="https://www.gadgets360.com/entertainment/news/netflix-free-upgrade-plans-standard-premium-subscription-offer-price-india-30-days-2234597/amp" target="_blank" style="font-size:0.75rem; color:var(--primary-light); text-decoration:none; border-bottom:1px dashed var(--primary-light);">Gadgets 360: Netflix Free Upgrade Plans in India</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cost Structure -->
+        <div class="card" style="margin-top:1.5rem; border-left:4px solid var(--primary);">
+            <h3>비용 구조와 운영 리스크</h3>
+
+            <div style="margin-top:1rem; padding:0.75rem 1rem; background:rgba(99,102,241,0.05); border-radius:8px; margin-bottom:1.25rem;">
+                <div style="font-size:0.8rem; font-weight:600; margin-bottom:0.5rem;">요금제 가격 기준</div>
+                <div style="display:flex; gap:2rem; font-size:0.85rem;">
+                    <span>Basic <strong>9,500원</strong>/월</span>
+                    <span>Standard <strong>12,000원</strong>/월</span>
+                    <span>Premium <strong>13,500원</strong>/월</span>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                <div style="padding:1rem; background:rgba(16,185,129,0.04); border-radius:8px; border-left:3px solid var(--accent-green);">
+                    <div style="font-size:0.85rem; font-weight:600; margin-bottom:0.5rem;">비용 구조</div>
+                    <p style="font-size:0.8rem; color:var(--text-secondary); line-height:1.6;">업그레이드 쿠폰은 <strong>현금 할인이 아닌 상위 경험 제공</strong>입니다. 고객은 Basic 요금을 유지한 채 Standard 혜택을 체험하므로 직접적인 매출 손실은 제한적입니다. 다만 동시접속, 화질, 트래픽 증가에 따른 인프라 한계비용은 존재합니다.</p>
+                </div>
+                <div style="padding:1rem; background:rgba(239,68,68,0.04); border-radius:8px; border-left:3px solid var(--accent-red);">
+                    <div style="font-size:0.85rem; font-weight:600; margin-bottom:0.5rem;">운영 리스크</div>
+                    <p style="font-size:0.8rem; color:var(--text-secondary); line-height:1.6;">프로모션 종료 시 원래 요금제로 복귀하거나 상위 유지를 선택하도록 <strong>명확한 선택지 제시</strong>가 필요합니다. 다운그레이드 경험이 오히려 불만을 키울 수 있으므로 종료 후 행동을 별도 모니터링해야 합니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Campaign Action Matrix -->
+        <div class="section-header">
+            <h2>2. Campaign Action Matrix</h2>
+            <p>Risk Group별 차별화된 리텐션 캠페인 전략</p>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:1.5rem;">
+            <!-- High Risk Action -->
+            <div class="card" style="border-left:4px solid var(--accent-red); background:rgba(239,68,68,0.04);">
+                <div style="display:flex; align-items:flex-start; gap:1.5rem;">
+                    <div style="flex-shrink:0; text-align:center;">
+                        <div style="width:56px; height:56px; border-radius:50%; background:rgba(239,68,68,0.2); display:flex; align-items:center; justify-content:center; font-size:1.5rem; margin-bottom:0.25rem;">
+                            &#x1F6A8;
+                        </div>
+                        <div style="font-size:0.7rem; color:var(--accent-red); font-weight:700;">Priority 1</div>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.75rem;">
+                            <h3 style="margin:0; color:var(--accent-red);">High Risk &mdash; 즉시 개입</h3>
+                            <span class="badge badge-danger">이탈률 87.6%</span>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; font-size:0.875rem;">
+                            <div>
+                                <div style="font-weight:600; color:var(--text-primary); margin-bottom:0.5rem;">권장 액션</div>
+                                <ul style="color:var(--text-secondary); padding-left:1.25rem; list-style-type:disc;">
+                                    <li>개인화 복귀 메시지 발송</li>
+                                    <li>할인/혜택 쿠폰 제공</li>
+                                    <li>최근 관심 장르 기반 추천</li>
+                                    <li>모바일 친화 짧은 콘텐츠 큐레이션</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <div style="font-weight:600; color:var(--text-primary); margin-bottom:0.5rem;">타겟 프로파일</div>
+                                <ul style="color:var(--text-secondary); padding-left:1.25rem; list-style-type:disc;">
+                                    <li>주간 시청 145분 (평균의 52%)</li>
+                                    <li>미접속 38.6일</li>
+                                    <li>Basic 요금제 72.7%</li>
+                                    <li>Mobile 사용 52.5%</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medium Risk Action -->
+            <div class="card" style="border-left:4px solid var(--accent-orange); background:rgba(245,158,11,0.04);">
+                <div style="display:flex; align-items:flex-start; gap:1.5rem;">
+                    <div style="flex-shrink:0; text-align:center;">
+                        <div style="width:56px; height:56px; border-radius:50%; background:rgba(245,158,11,0.2); display:flex; align-items:center; justify-content:center; font-size:1.5rem; margin-bottom:0.25rem;">
+                            &#x26A0;&#xFE0F;
+                        </div>
+                        <div style="font-size:0.7rem; color:var(--accent-orange); font-weight:700;">Priority 2</div>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.75rem;">
+                            <h3 style="margin:0; color:var(--accent-orange);">Medium Risk &mdash; 가벼운 개입</h3>
+                            <span class="badge badge-warning">이탈률 42.05%</span>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; font-size:0.875rem;">
+                            <div>
+                                <div style="font-weight:600; color:var(--text-primary); margin-bottom:0.5rem;">권장 액션</div>
+                                <ul style="color:var(--text-secondary); padding-left:1.25rem; list-style-type:disc;">
+                                    <li>추천 콘텐츠 알림 발송</li>
+                                    <li>시청 이어보기 유도</li>
+                                    <li>앱 경험 개선 메시지</li>
+                                    <li>요금제 업그레이드 안내</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <div style="font-weight:600; color:var(--text-primary); margin-bottom:0.5rem;">근거</div>
+                                <ul style="color:var(--text-secondary); padding-left:1.25rem; list-style-type:disc;">
+                                    <li>전체 평균의 2배 이탈 위험</li>
+                                    <li>고비용 할인보다 저비용 넛지 적합</li>
+                                    <li>적극 개입 시 유지 전환 가능</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Low Risk Action -->
+            <div class="card" style="border-left:4px solid var(--accent-green); background:rgba(16,185,129,0.04);">
+                <div style="display:flex; align-items:flex-start; gap:1.5rem;">
+                    <div style="flex-shrink:0; text-align:center;">
+                        <div style="width:56px; height:56px; border-radius:50%; background:rgba(16,185,129,0.2); display:flex; align-items:center; justify-content:center; font-size:1.5rem; margin-bottom:0.25rem;">
+                            &#x2705;
+                        </div>
+                        <div style="font-size:0.7rem; color:var(--accent-green); font-weight:700;">Priority 3</div>
+                    </div>
+                    <div style="flex:1;">
+                        <div style="display:flex; align-items:center; gap:0.75rem; margin-bottom:0.75rem;">
+                            <h3 style="margin:0; color:var(--accent-green);">Low Risk &mdash; 유지 관리</h3>
+                            <span class="badge badge-success">이탈률 5.4%</span>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; font-size:0.875rem;">
+                            <div>
+                                <div style="font-weight:600; color:var(--text-primary); margin-bottom:0.5rem;">권장 액션</div>
+                                <ul style="color:var(--text-secondary); padding-left:1.25rem; list-style-type:disc;">
+                                    <li>일반 추천 알고리즘 유지</li>
+                                    <li>충성 고객 혜택 프로그램</li>
+                                    <li>만족도 유지 및 리뷰 유도</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <div style="font-weight:600; color:var(--text-primary); margin-bottom:0.5rem;">근거</div>
+                                <ul style="color:var(--text-secondary); padding-left:1.25rem; list-style-type:disc;">
+                                    <li>이탈 위험이 매우 낮음</li>
+                                    <li>고비용 할인 캠페인 불필요</li>
+                                    <li>관계 유지 중심 전략 적합</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Budget Strategy -->
+        <div class="section-header">
+            <h2>3. 예산별 타겟팅 전략</h2>
+        </div>
+
+        <div class="grid-3">
+            <div class="card" style="border-top:3px solid var(--accent-red); text-align:center;">
+                <h3 style="color:var(--accent-red);">최소 예산</h3>
+                <div style="font-size:2.5rem; font-weight:800; background:var(--gradient-3); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin:1rem 0;">
+                    Top 5~10%
+                </div>
+                <p style="font-size:0.85rem;">500~1,000명 타겟<br>이탈자 22~42% 포착<br>Lift 4.19~4.47x</p>
+            </div>
+            <div class="card" style="border-top:3px solid var(--accent-orange); text-align:center;">
+                <h3 style="color:var(--accent-orange);">균형 전략</h3>
+                <div style="font-size:2.5rem; font-weight:800; background:linear-gradient(135deg, #f59e0b, #06b6d4); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin:1rem 0;">
+                    Top 20%
+                </div>
+                <p style="font-size:0.85rem;">2,000명 타겟<br>이탈자 67.85% 포착<br>Lift 3.39x</p>
+            </div>
+            <div class="card" style="border-top:3px solid var(--accent-green); text-align:center;">
+                <h3 style="color:var(--accent-green);">공격적 방어</h3>
+                <div style="font-size:2.5rem; font-weight:800; background:var(--gradient-2); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin:1rem 0;">
+                    Top 30%
+                </div>
+                <p style="font-size:0.85rem;">3,000명 타겟<br>이탈자 82.04% 포착<br>Lift 2.73x</p>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Campaign Operation Principles -->
+        <div class="section-header">
+            <h2>4. 캠페인 운영 원칙</h2>
+        </div>
+
+        <div class="grid-3">
+            <div class="card" style="border-top:3px solid var(--accent-red); text-align:center;">
+                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-bottom:0.75rem;">PRIORITY</div>
+                <h3 style="font-size:1.1rem; margin-bottom:0.75rem;">Risk Score First</h3>
+                <p style="font-size:0.85rem; color:var(--text-secondary);">캠페인 대상 여부는<br><strong>모델 ranking</strong>으로 결정합니다.<br>감이 아닌 데이터 기반 우선순위.</p>
+            </div>
+            <div class="card" style="border-top:3px solid var(--accent-orange); text-align:center;">
+                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-bottom:0.75rem;">SEGMENTATION</div>
+                <h3 style="font-size:1.1rem; margin-bottom:0.75rem;">KMeans Cluster Second</h3>
+                <p style="font-size:0.85rem; color:var(--text-secondary);">메시지와 혜택 세분화에는<br><strong>KMeans cluster</strong>를<br>보조 기준으로 사용합니다.</p>
+            </div>
+            <div class="card" style="border-top:3px solid var(--accent-green); text-align:center;">
+                <div style="font-size:0.75rem; color:var(--text-muted); font-weight:600; margin-bottom:0.75rem;">BUDGET CONTROL</div>
+                <h3 style="font-size:1.1rem; margin-bottom:0.75rem;">Top 10% Pilot</h3>
+                <p style="font-size:0.85rem; color:var(--text-secondary);">초기 집행은 <strong>상위 10%</strong>로 제한하고<br>효과 검증 후 확장합니다.</p>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Real Data Validation -->
+        <div class="section-header">
+            <h2>5. 실제 데이터 검증: KKBOX</h2>
+            <p>동일한 Stacking 파이프라인을 실제 구독 서비스 데이터에 적용한 결과</p>
+        </div>
+
+        <div class="card" style="background:linear-gradient(135deg, rgba(99,102,241,0.08), rgba(16,185,129,0.05)); border:1px solid rgba(99,102,241,0.2); padding:2rem;">
+            <div style="text-align:center; margin-bottom:1.5rem;">
+                <h3 style="font-size:1.2rem; margin-bottom:0.5rem;">합성 데이터 vs 실제 데이터</h3>
+                <p style="color:var(--text-muted); font-size:0.9rem; max-width:700px; margin:0 auto;">Netflix 데이터는 synthetic(합성) 데이터이므로 모델 성능에 한계가 있었습니다.<br>실제 구독 서비스인 KKBOX 데이터에 동일 파이프라인을 적용한 결과, 성능이 대폭 상승했습니다.</p>
+            </div>
+
+            <div class="table-wrapper" style="margin-bottom:1.5rem;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>데이터셋</th>
+                            <th>유형</th>
+                            <th>ROC AUC</th>
+                            <th>F1 Score</th>
+                            <th>Precision</th>
+                            <th>Recall</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Netflix</td>
+                            <td><span class="badge" style="background:rgba(148,163,184,0.15);">합성 데이터</span></td>
+                            <td>0.8953</td>
+                            <td>0.7184</td>
+                            <td>0.7377</td>
+                            <td>0.7000</td>
+                        </tr>
+                        <tr style="background:rgba(16,185,129,0.06);">
+                            <td><strong>KKBOX</strong></td>
+                            <td><span class="badge badge-success">실제 데이터</span></td>
+                            <td><strong style="color:var(--accent-green);">0.9770</strong></td>
+                            <td><strong style="color:var(--accent-green);">0.8807</strong></td>
+                            <td><strong style="color:var(--accent-green);">0.8507</strong></td>
+                            <td><strong style="color:var(--accent-green);">0.9129</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem; margin-bottom:1.5rem;">
+                <div style="text-align:center; padding:1rem; background:rgba(16,185,129,0.06); border-radius:8px;">
+                    <div style="font-size:1.5rem; font-weight:800; color:var(--accent-green);">+0.082</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">ROC AUC 상승</div>
+                </div>
+                <div style="text-align:center; padding:1rem; background:rgba(16,185,129,0.06); border-radius:8px;">
+                    <div style="font-size:1.5rem; font-weight:800; color:var(--accent-green);">+0.162</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">F1 Score 상승</div>
+                </div>
+                <div style="text-align:center; padding:1rem; background:rgba(16,185,129,0.06); border-radius:8px;">
+                    <div style="font-size:1.5rem; font-weight:800; color:var(--accent-green);">+0.113</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">Precision 상승</div>
+                </div>
+                <div style="text-align:center; padding:1rem; background:rgba(16,185,129,0.06); border-radius:8px;">
+                    <div style="font-size:1.5rem; font-weight:800; color:var(--accent-green);">+0.213</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">Recall 상승</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="callout callout-success">
+            <p><strong>의미:</strong> Netflix 합성 데이터에서의 낮은 성능은 데이터 자체의 한계이지, 파이프라인이나 비즈니스 인사이트의 문제가 아닙니다. 동일한 Stacking 파이프라인이 실제 구독 서비스 데이터(KKBOX)에서 ROC AUC 0.977, F1 0.881을 달성했으며, 이는 실제 기업 데이터에 적용할 경우 <strong>유의미한 이탈 예측과 리텐션 전략 수립이 가능</strong>함을 뒷받침합니다.</p>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Final Summary -->
+        <div class="section-header">
+            <h2>6. 프로젝트 최종 결론</h2>
+        </div>
+
+        <div class="card" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(236, 72, 153, 0.06)); border:1px solid rgba(99,102,241,0.2);">
+            <div style="text-align:center; margin-bottom:2rem;">
+                <h3 style="font-size:1.5rem; margin-bottom:0.5rem;">Netflix 고객 이탈 예측 & 리텐션 전략</h3>
+                <p>50,000명의 사용자 행동 데이터 기반 End-to-End ML Pipeline</p>
+            </div>
+
+            <div class="grid-2" style="gap:2rem;">
+                <div>
+                    <h3 style="color:var(--primary-light); margin-bottom:1rem; font-size:1rem;">모델 성과</h3>
+                    <div style="font-size:0.9rem; color:var(--text-secondary);">
+                        <div style="padding:0.5rem 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between;">
+                            <span>Final Model</span><strong style="color:var(--text-primary);">Stacking Ensemble</strong>
+                        </div>
+                        <div style="padding:0.5rem 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between;">
+                            <span>PR AUC</span><strong style="color:var(--primary-light);">0.7643</strong>
+                        </div>
+                        <div style="padding:0.5rem 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between;">
+                            <span>F1 Score</span><strong style="color:var(--accent-green);">0.6942</strong>
+                        </div>
+                        <div style="padding:0.5rem 0; border-bottom:1px solid var(--border); display:flex; justify-content:space-between;">
+                            <span>상위 10% Lift</span><strong style="color:var(--accent-red);">4.19x</strong>
+                        </div>
+                        <div style="padding:0.5rem 0; display:flex; justify-content:space-between;">
+                            <span>상위 20% 포착률</span><strong style="color:var(--accent-orange);">67.85%</strong>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h3 style="color:var(--secondary); margin-bottom:1rem; font-size:1rem;">핵심 인사이트</h3>
+                    <div style="font-size:0.9rem; color:var(--text-secondary);">
+                        <div style="margin-bottom:0.75rem; padding-left:1rem; border-left:3px solid var(--accent-red);">
+                            <strong style="color:var(--text-primary);">이탈의 핵심 신호:</strong> 최근 로그인 공백이 가장 강한 이탈 예측 변수
+                        </div>
+                        <div style="margin-bottom:0.75rem; padding-left:1rem; border-left:3px solid var(--accent-orange);">
+                            <strong style="color:var(--text-primary);">고위험 프로파일:</strong> Basic + Mobile + 낮은 시청량 + 긴 미접속
+                        </div>
+                        <div style="margin-bottom:0.75rem; padding-left:1rem; border-left:3px solid var(--accent-green);">
+                            <strong style="color:var(--text-primary);">실용적 가치:</strong> 상위 20%만 타겟팅해도 이탈자의 2/3 포착
+                        </div>
+                        <div style="padding-left:1rem; border-left:3px solid var(--primary);">
+                            <strong style="color:var(--text-primary);">모델 특성:</strong> 선형 모델이 강한 기준선, 앙상블로 소폭 개선
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Netflix Customer Churn Prediction Project | SKN 30 Project 2</p>
+        </div>
+    </div>
+</body>
+</html>

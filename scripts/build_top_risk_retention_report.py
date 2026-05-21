@@ -29,6 +29,12 @@ def num(value: float, digits: int = 1) -> str:
     return f"{value:.{digits}f}"
 
 
+def model_label(value: str) -> str:
+    if value in {"Stacking", "Stacking_original_features"}:
+        return "Stacking (original features)"
+    return value.replace("_", " ")
+
+
 def fig_to_base64(fig: plt.Figure) -> str:
     buf = BytesIO()
     fig.savefig(buf, format="png", dpi=170, bbox_inches="tight", facecolor="white")
@@ -257,6 +263,8 @@ def render_analysis(context: dict[str, object]) -> str:
   <header>
     <nav>
       <a href="index.html">Report Home</a>
+      <a href="eda_analysis.html">EDA Evidence</a>
+      <a href="interactive_report.html">Interactive Report</a>
       <a href="modeling_methodology.html">Modeling Methodology</a>
       <a class="active" href="retention_analysis.html">Retention Analysis</a>
       <a href="top_risk_retention_strategy.html">Final Strategy</a>
@@ -264,7 +272,7 @@ def render_analysis(context: dict[str, object]) -> str:
     <div class="hero">
       <div>
         <h1>Retention Target Analysis</h1>
-        <p class="subtitle">Risk score 기반 타겟팅의 타당성을 top-k, 가입기간, 요금제, 기기, KMeans cluster 관점에서 검증한 분석 페이지입니다.</p>
+        <p class="subtitle">06 노트북의 가정, 실험, 결과, 최종 판단 구조를 유지해 risk score 기반 타겟팅의 타당성을 검증한 분석 페이지입니다.</p>
       </div>
       <div class="kpi-row">
         <div class="kpi"><span>Top 30% captured</span><b>{context["top30_captured"]}</b></div>
@@ -275,7 +283,7 @@ def render_analysis(context: dict[str, object]) -> str:
   </header>
   <main>
     <section>
-      <h2>1. Top-k Ranking 성능</h2>
+      <h2>1. 가정 - risk score ranking으로 캠페인 우선순위를 정할 수 있다</h2>
       <p class="section-lead">Top 30%는 모델 ranking의 설명력을 검증하는 범위이며, Top 10%는 비용이 수반되는 retention action의 우선 실행 범위로 해석합니다.</p>
       <div class="grid-3">
         <div class="insight"><span class="eyebrow">Ranking coverage</span><b>{context["top30_captured"]}</b><p>Top 30% 구간에 포함된 전체 이탈자 비중.</p></div>
@@ -283,16 +291,23 @@ def render_analysis(context: dict[str, object]) -> str:
         <div class="insight"><span class="eyebrow">Operating scope</span><b>Top 10%</b><p>초기 유료 캠페인 집행 범위.</p></div>
       </div>
       <div class="reading-guide">
-        <strong>Interpretation</strong>
-        `Captured churners`는 커버리지, `Actual churn rate`는 타겟 품질을 의미합니다.
-        본 분석에서는 두 지표를 분리해 모델 검증 범위와 캠페인 실행 범위를 구분했습니다.
+        <strong>Percentile construction</strong>
+        최종 모델 <code>{context["final_model"]}</code>이 산출한 <code>churn_probability</code>를 기준으로 test 고객 {context["total_customers"]}명을 내림차순 정렬한 뒤,
+        상위 {context["top10_customers"]}, {context["top20_customers"]}, {context["top30_customers"]}명을 각각 Top 10%, Top 20%, Top 30%로 정의했습니다.
+        threshold는 0/1 분류 성능 비교용이며, top-k ranking 구간 생성에는 사용하지 않았습니다.
+      </div>
+      <div class="reading-guide">
+        <strong>Metric definition</strong>
+        <code>Actual churn rate</code>는 해당 구간 내 실제 이탈자 수를 구간 고객 수로 나눈 값입니다.
+        <code>Captured churners</code>는 해당 구간 내 실제 이탈자 수를 전체 test 이탈자 {context["total_churners"]}명으로 나눈 값이며,
+        <code>Lift</code>는 전체 test churn rate 대비 해당 구간 churn rate의 배율입니다.
       </div>
       <div class="table-wrap">{context["topk_table"]}</div>
       <p class="caption">Top 30%는 coverage, Top 10%는 execution quality 관점에서 해석합니다.</p>
       <div class="chart"><img alt="Top-k targeting performance" src="data:image/png;base64,{context["topk_chart"]}" /></div>
     </section>
     <section>
-      <h2>2. Top 10% 내부 세분화</h2>
+      <h2>2. 실험 - Top 10% 내부 세분화</h2>
       <p class="section-lead">상위 10% 안에서도 성장기와 장기 고객의 규모가 크고 이탈률도 높습니다. 이 두 구간을 요금제와 결합해 최종 핵심 타겟을 찾았습니다.</p>
       <div class="grid-3">
         <div class="insight"><span class="eyebrow">Largest tenure segment</span><b>{context["largest_tenure"]}</b><p>Top 10% 내 최대 가입기간 구간.</p></div>
@@ -314,7 +329,7 @@ def render_analysis(context: dict[str, object]) -> str:
       <div class="table-wrap">{context["tenure_subscription_table"]}</div>
     </section>
     <section>
-      <h2>3. 타겟 행동 특성 검증</h2>
+      <h2>3. 결과 - 타겟 행동 특성 검증</h2>
       <p class="section-lead">핵심 타겟은 Basic 고객이라는 단일 조건으로 고른 것이 아닙니다. 최근 접속 공백, 낮은 시청시간, 낮은 완료율, 낮은 추천 클릭률이 함께 관찰됩니다.</p>
       <div class="grid-3">
         <div class="insight"><span class="eyebrow">Login gap</span><b>{context["focus_login_gap"]}</b><p>핵심 타겟 평균 최근 미접속 기간.</p></div>
@@ -329,7 +344,7 @@ def render_analysis(context: dict[str, object]) -> str:
       <div class="chart"><img alt="Focus target feature profile" src="data:image/png;base64,{context["focus_profile_chart"]}" /></div>
     </section>
     <section>
-      <h2>4. KMeans Cluster 결합 검증</h2>
+      <h2>4. 결과 - KMeans Cluster 결합 검증</h2>
       <p class="section-lead">Risk group은 모델 예측확률 기반 실행 구간이고, KMeans cluster는 train 데이터에서 fit한 비지도 군집입니다. 두 기준의 결합을 통해 타겟의 행동 패턴 일관성을 검토했습니다.</p>
       <div class="decision">
         <strong>High risk 고객의 {context["main_cluster_share"]}가 KMeans Cluster {context["main_cluster"]}에 집중</strong>
@@ -346,7 +361,7 @@ def render_analysis(context: dict[str, object]) -> str:
       </div>
     </section>
     <section>
-      <h2>5. 요금제 x 기기 인사이트</h2>
+      <h2>5. 최종 - 요금제 x 기기 인사이트</h2>
       <p class="section-lead">Basic + Mobile 고객 구간이 크기 때문에 최종 전략은 가격 민감도와 모바일 사용 맥락을 동시에 반영해야 합니다.</p>
       <div class="grid-3">
         <div class="insight"><span class="eyebrow">Largest plan-device</span><b>{context["largest_plan_device"]}</b><p>상위 10% 안에서 고객 수가 가장 큰 요금제 x 기기 조합입니다.</p></div>
@@ -358,6 +373,9 @@ def render_analysis(context: dict[str, object]) -> str:
         요금제와 기기 조합별 규모, 이탈률, 사용 저하 지표를 함께 비교했습니다.
       </div>
       <div class="table-wrap">{context["plan_device_table"]}</div>
+      <h3>논문 기반 proxy 사후 점검</h3>
+      <p class="caption">논문 기반 proxy는 최종 모델 입력이나 타겟 분할 기준이 아니라, Mobile-only 저가 요금제 제안의 해석 보조 근거로만 사용했습니다.</p>
+      <div class="table-wrap">{context["paper_proxy_table"]}</div>
     </section>
     <footer>Source: outputs/churn_risk_scores_test.csv</footer>
   </main>
@@ -379,6 +397,8 @@ def render_strategy(context: dict[str, object]) -> str:
   <header>
     <nav>
       <a href="index.html">Report Home</a>
+      <a href="eda_analysis.html">EDA Evidence</a>
+      <a href="interactive_report.html">Interactive Report</a>
       <a href="modeling_methodology.html">Modeling Methodology</a>
       <a href="retention_analysis.html">Retention Analysis</a>
       <a class="active" href="top_risk_retention_strategy.html">Final Strategy</a>
@@ -386,22 +406,27 @@ def render_strategy(context: dict[str, object]) -> str:
     <div class="hero">
       <div>
         <h1>Final Retention Strategy</h1>
-        <p class="subtitle">상위 30%는 모델 검증 범위로, 상위 10%는 실제 캠페인 실행 범위로 사용합니다. 최종 타겟은 상위 10% 중 성장기/장기 Basic 고객입니다.</p>
+        <p class="subtitle">Retention 분석 결과를 바탕으로 가정, 실행 후보, 근거, 최종 운영 원칙 순서로 정리한 최종 전략 페이지입니다. 최종 타겟은 상위 10% 중 성장기/장기 Basic 고객입니다.</p>
       </div>
       <div class="kpi-row">
         <div class="kpi"><span>Focus target</span><b>{context["focus_customers"]}</b></div>
-        <div class="kpi"><span>Focus churn</span><b>{context["focus_churn"]}</b></div>
+        <div class="kpi"><span>Focus target churn</span><b>{context["focus_churn"]}</b></div>
         <div class="kpi"><span>Top 10% share</span><b>{context["focus_share"]}</b></div>
       </div>
     </div>
   </header>
   <main>
     <section>
-      <h2>1. Target Decision</h2>
+      <h2>1. 가정 - 모든 고위험 고객이 아니라 실행 가능한 핵심 타겟을 고른다</h2>
       <div class="decision">
         <strong>상위 10% risk 고객 중 성장기/장기 Basic 고객</strong>
         이 구간은 {context["focus_customers"]}으로 상위 10% 고객의 {context["focus_share"]}를 차지하고, 실제 churn rate는 {context["focus_churn"]}입니다.
         제한된 예산에서 가장 먼저 보호해야 할 고객군입니다.
+      </div>
+      <div class="reading-guide">
+        <strong>Target boundary</strong>
+        Top 10%는 threshold로 분류한 집단이 아니라, 최종 모델 <code>{context["final_model"]}</code>의 <code>churn_probability</code>를 내림차순 정렬했을 때 전체 test 고객 {context["total_customers"]}명 중 상위 {context["top10_customers"]}명입니다.
+        이 중 성장기/장기 Basic 고객 {context["focus_customers"]}을 최종 focus target으로 좁혔기 때문에, Top 10% 전체 churn rate({context["top10_churn"]})와 focus target churn rate({context["focus_churn"]})는 서로 다른 모수에서 계산됩니다.
       </div>
       <div class="grid-3">
         <div class="evidence">
@@ -422,7 +447,7 @@ def render_strategy(context: dict[str, object]) -> str:
       </div>
     </section>
     <section>
-      <h2>2. Business Actions</h2>
+      <h2>2. 실험 - 실행 액션 후보 설계</h2>
       <div class="grid-2">
         <div class="action">
           <span class="eyebrow">Action 1</span>
@@ -437,7 +462,7 @@ def render_strategy(context: dict[str, object]) -> str:
         <div class="action">
           <span class="eyebrow">Action 2</span>
           <strong>Mobile-only 저가 요금제</strong>
-          <p>모바일에서만 시청 가능한 저가 요금제를 신설해 가격 민감 고객의 완전 해지를 낮은 비용의 유지로 전환합니다.</p>
+          <p>모바일에서만 시청 가능한 저가 요금제를 신설해 가격 민감 고객의 완전 해지를 낮은 비용의 유지로 전환합니다. 실제 가격 민감도는 직접 관측되지 않으므로, 사용량 대비 요금제 가치 proxy와 Basic + Mobile 집중도를 함께 해석했습니다.</p>
           <ul>
             <li>대상: Mobile 사용 비중이 높은 상위 risk 고객</li>
             <li>제약: 모바일 앱 전용, 동시접속/화질/TV 이용 제한</li>
@@ -447,7 +472,7 @@ def render_strategy(context: dict[str, object]) -> str:
       </div>
     </section>
     <section>
-      <h2>3. Benchmark Logic</h2>
+      <h2>3. 근거 - Benchmark Logic</h2>
       <p class="section-lead">
         Netflix는 과거 호주와 인도에서 신규 가입자를 대상으로 30일 무료 체험 대신 한시적 요금제 업그레이드 프로모션을 운영한 사례가 있습니다.
         본 프로젝트는 같은 업그레이드 메커니즘을 신규 유입이 아니라 기존 중/장기 Basic 고객 이탈 방지에 적용합니다.
@@ -460,7 +485,34 @@ def render_strategy(context: dict[str, object]) -> str:
       </p>
     </section>
     <section>
-      <h2>4. Campaign Operating Rule</h2>
+      <h2>4. 결과 - 비용 구조와 리스크</h2>
+      <div class="reading-guide">
+        <strong>요금제 가격 가정</strong>
+        Basic 9,500원/월 · Standard 12,000원/월 · Premium 13,500원/월
+      </div>
+      <div class="grid-2">
+        <div class="evidence">
+          <span class="eyebrow">업그레이드 쿠폰</span>
+          <strong>현금성 할인 없이 상위 경험 제공</strong>
+          <p>고객은 Basic 요금을 유지한 채 1개월간 Standard 혜택을 체험합니다. 현금 지출은 제한적이지만 동시접속, 화질, 트래픽 증가에 따른 인프라 한계비용은 존재합니다.</p>
+        </div>
+        <div class="evidence">
+          <span class="eyebrow">운영 리스크</span>
+          <strong>쿠폰 종료 후 행동 관리 필요</strong>
+          <p>프로모션 종료 시 원래 요금제로 복귀하거나 상위 요금제를 유지하도록 선택지를 명확히 제시해야 합니다. 다운그레이드 경험이 불만으로 이어지는지 별도 모니터링이 필요합니다.</p>
+        </div>
+      </div>
+    </section>
+    <section>
+      <h2>5. 실험 - A/B 테스트 설계</h2>
+      <div class="grid-3">
+        <div class="card"><span class="eyebrow">Population</span><strong>Focus target {context["focus_customers"]}</strong><p>상위 10% 중 성장기/장기 Basic 고객을 control과 treatment로 무작위 분할합니다.</p></div>
+        <div class="card"><span class="eyebrow">Primary metric</span><strong>30일 잔존율</strong><p>보조 지표는 60일 잔존율, Standard 유지율, Mobile-only 전환율, 메시지 수신 후 접속 회복률입니다.</p></div>
+        <div class="card"><span class="eyebrow">Guardrail</span><strong>ARPU와 해지 가속</strong><p>쿠폰 종료 후 즉시 해지, 다운그레이드 불만, 저가 요금제 전환에 따른 매출 희석을 함께 관찰합니다.</p></div>
+      </div>
+    </section>
+    <section>
+      <h2>6. 최종 - 캠페인 운영 원칙</h2>
       <div class="grid-3">
         <div class="card"><span class="eyebrow">Priority</span><strong>Risk score first</strong><p>캠페인 대상 여부는 모델 ranking으로 결정합니다.</p></div>
         <div class="card"><span class="eyebrow">Segmentation</span><strong>KMeans cluster second</strong><p>메시지와 혜택 세분화에는 KMeans cluster를 보조 기준으로 사용합니다.</p></div>
@@ -479,6 +531,22 @@ def main() -> None:
 
     df = pd.read_csv(RISK_SCORE_PATH).sort_values("churn_probability", ascending=False).reset_index(drop=True)
     df = add_segments(df)
+    plan_price = {"Basic": 9500, "Standard": 12000, "Premium": 13500}
+    df["plan_price"] = df["subscription_type"].map(plan_price)
+    value_cols = [
+        "avg_watch_time_minutes_per_week",
+        "watch_sessions_per_week",
+        "completion_rate",
+        "recommendation_click_rate",
+        "app_rating",
+    ]
+    normalized = pd.DataFrame(index=df.index)
+    for col in value_cols:
+        span = df[col].max() - df[col].min()
+        normalized[col] = 0 if span == 0 else (df[col] - df[col].min()) / span * 100
+    df["usage_value_score"] = normalized.mean(axis=1)
+    df["value_for_money_score"] = df["usage_value_score"] / (df["plan_price"] / plan_price["Basic"])
+    df["price_burden_proxy"] = (100 - df["value_for_money_score"]).clip(lower=0, upper=100)
     topk = build_topk(df)
     high = df[df["risk_group"] == "High: top 10%"].copy()
     focus = high[
@@ -560,6 +628,25 @@ def main() -> None:
         .sort_values(["customers", "churn_rate"], ascending=[False, False])
         .head(10)
     )
+    proxy_rows = []
+    for name, source in [
+        ("All test", df),
+        ("Top 10%", high),
+        ("Focus target", focus),
+        ("Top 10% Basic + Mobile", high[(high["subscription_type"] == "Basic") & (high["primary_device"] == "Mobile")]),
+    ]:
+        proxy_rows.append(
+            {
+                "group": name,
+                "customers": len(source),
+                "churn_rate": source["actual_churn"].mean(),
+                "mobile_share": (source["primary_device"] == "Mobile").mean(),
+                "avg_usage_value": source["usage_value_score"].mean(),
+                "avg_value_for_money": source["value_for_money_score"].mean(),
+                "price_burden_proxy": source["price_burden_proxy"].mean(),
+            }
+        )
+    paper_proxy = pd.DataFrame(proxy_rows)
 
     top10_row = topk.loc[topk["target_pct"] == 0.10].iloc[0]
     top30_row = topk.loc[topk["target_pct"] == 0.30].iloc[0]
@@ -674,10 +761,32 @@ def main() -> None:
         ["Avg days since login", "Avg weekly watch min"],
         highlight_terms=("Basic|Mobile",),
     )
+    paper_proxy_table = fmt_table(
+        paper_proxy.rename(
+            columns={
+                "group": "Group",
+                "customers": "Customers",
+                "churn_rate": "Actual churn rate",
+                "mobile_share": "Mobile share",
+                "avg_usage_value": "Avg usage value",
+                "avg_value_for_money": "Avg value for money",
+                "price_burden_proxy": "Price burden proxy",
+            }
+        ),
+        ["Actual churn rate", "Mobile share"],
+        ["Avg usage value", "Avg value for money", "Price burden proxy"],
+        highlight_terms=("Focus target", "Top 10% Basic + Mobile"),
+    )
 
     context = {
+        "final_model": model_label(str(df["final_model"].mode().iloc[0])) if "final_model" in df.columns else "Stacking (original features)",
         "top30_captured": pct(top30_row["captured_churner"]),
         "top10_churn": pct(top10_row["churn_rate"]),
+        "total_customers": f"{len(df):,}",
+        "total_churners": f"{int(df['actual_churn'].sum()):,}",
+        "top10_customers": f"{int(len(df) * 0.10):,}",
+        "top20_customers": f"{int(len(df) * 0.20):,}",
+        "top30_customers": f"{int(len(df) * 0.30):,}",
         "focus_customers": f"{len(focus):,}명",
         "focus_churn": pct(focus["actual_churn"].mean()),
         "focus_share": pct(focus_share),
@@ -694,6 +803,7 @@ def main() -> None:
         "feature_profile_table": feature_profile_table,
         "cluster_risk_table": cluster_risk_table,
         "plan_device_table": plan_device_table,
+        "paper_proxy_table": paper_proxy_table,
         "topk_chart": make_topk_chart(topk),
         "tenure_chart": make_tenure_chart(high_tenure),
         "focus_profile_chart": make_focus_profile_chart(feature_profile),

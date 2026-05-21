@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import base64
+import json
 import os
 import re
 from io import BytesIO
@@ -17,6 +18,7 @@ import matplotlib.pyplot as plt
 MODEL_RESULT_PATH = ROOT / "outputs" / "churn_model_final_result.csv"
 THRESHOLD_RESULT_PATH = ROOT / "outputs" / "churn_threshold_result.csv"
 RISK_SCORE_PATH = ROOT / "outputs" / "churn_risk_scores_test.csv"
+MODEL_METADATA_PATH = ROOT / "models" / "final_churn_model_metadata.json"
 REPORT_PATH = ROOT / "reports" / "modeling_methodology.html"
 INDEX_PATH = ROOT / "reports" / "index.html"
 
@@ -119,10 +121,10 @@ def build_index() -> None:
   <title>Netflix Churn Analysis Reports</title>
   <style>
     body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #111827; background: #f8fafc; }
-    main { max-width: 980px; margin: 0 auto; padding: 56px 24px; }
+    main { max-width: 1120px; margin: 0 auto; padding: 56px 24px; }
     h1 { font-size: 34px; margin: 0 0 12px; letter-spacing: 0; }
     p { color: #5b6472; line-height: 1.6; }
-    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 28px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; margin-top: 28px; }
     a.card { display: block; color: inherit; text-decoration: none; background: white; border: 1px solid #d8dee8; border-radius: 8px; padding: 22px; }
     a.card:hover { border-color: #2563eb; }
     .label { color: #2563eb; font-size: 13px; font-weight: 700; text-transform: uppercase; }
@@ -134,9 +136,19 @@ def build_index() -> None:
   <main>
     <h1>Netflix Churn Analysis Reports</h1>
     <p>
-      모델링 방법론, 리텐션 타겟 분석, 최종 비즈니스 전략을 분리한 발표용 HTML 리포트입니다.
+      EDA, 모델링 방법론, 리텐션 타겟 분석, 최종 비즈니스 전략, 인터랙티브 요약을 분리한 발표용 HTML 리포트입니다.
     </p>
     <div class="grid">
+      <a class="card" href="eda_analysis.html">
+        <span class="label">EDA</span>
+        <h2>EDA Evidence</h2>
+        <p>타겟 분포, 행동 피처 차이, 요금제/기기/가입기간별 churn 패턴과 이후 분석으로 이어지는 근거.</p>
+      </a>
+      <a class="card" href="interactive_report.html">
+        <span class="label">Interactive</span>
+        <h2>Interactive Report</h2>
+        <p>가정, 실험, 결과, 최종 흐름을 한 화면에서 탐색하고 Top-k 기준을 조정하는 대시보드.</p>
+      </a>
       <a class="card" href="modeling_methodology.html">
         <span class="label">Analysis Process</span>
         <h2>Modeling Methodology</h2>
@@ -160,6 +172,16 @@ def build_index() -> None:
     INDEX_PATH.write_text(html, encoding="utf-8")
 
 
+def final_model_label() -> str:
+    if not MODEL_METADATA_PATH.exists():
+        return "Stacking (original features)"
+    metadata = json.loads(MODEL_METADATA_PATH.read_text(encoding="utf-8"))
+    model_name = metadata.get("final_model_name", "Stacking_original_features")
+    if model_name == "Stacking_original_features":
+        return "Stacking (original features)"
+    return str(model_name).replace("_", " ")
+
+
 def main() -> None:
     REPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
 
@@ -168,6 +190,7 @@ def main() -> None:
     risk_scores = pd.read_csv(RISK_SCORE_PATH)
 
     best_model = model_result.sort_values("pr_auc", ascending=False).iloc[0]
+    final_model_display = final_model_label()
     best_threshold = threshold.sort_values("f1", ascending=False).iloc[0]
     base_churn_rate = risk_scores["actual_churn"].mean()
     top10 = risk_scores.sort_values("churn_probability", ascending=False).head(int(len(risk_scores) * 0.1))
@@ -237,7 +260,7 @@ def main() -> None:
                 "pr_auc": 0.7593,
                 "selected_f1": 0.0,
                 "top10_churn_rate": 0.858,
-                "decision": "모델 입력보다 사후 해석용으로 활용",
+                "decision": "최종 모델 입력 제외, 행동 해석 보조 자료로 정리",
             },
             {
                 "experiment": "Paper-Based FE",
@@ -388,7 +411,7 @@ def main() -> None:
     h2 {{ margin: 36px 0 14px; padding-top: 8px; font-size: 23px; letter-spacing: 0; }}
     h3 {{ margin: 24px 0 8px; font-size: 17px; }}
     p {{ margin: 8px 0 12px; }}
-    .metrics {{ display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 22px 0 28px; }}
+    .metrics {{ display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin: 22px 0 28px; }}
     .metric {{ border: 1px solid var(--line); border-radius: 8px; padding: 14px 14px 12px; background: #ffffff; }}
     .metric .label {{ display: block; color: var(--muted); font-size: 13px; }}
     .metric .value {{ display: block; margin-top: 5px; font-size: 24px; font-weight: 700; }}
@@ -422,24 +445,26 @@ def main() -> None:
   <header>
     <nav>
       <a href="index.html">Report Home</a>
+      <a href="eda_analysis.html">EDA Evidence</a>
+      <a href="interactive_report.html">Interactive Report</a>
       <a class="active" href="modeling_methodology.html">Modeling Methodology</a>
       <a href="retention_analysis.html">Retention Analysis</a>
       <a href="top_risk_retention_strategy.html">Final Strategy</a>
     </nav>
     <h1>Churn Modeling & Feature Engineering Methodology</h1>
     <p class="subtitle">
-      어떤 피처를 선택했고, 왜 피처 엔지니어링을 했으며, 최종적으로 왜 원본 피처 기반 risk score를 유지했는지 설명하는 분석 과정 페이지입니다.
+      04-07 노트북의 가정, 실험, 결과, 최종 판단 구조를 유지해 정리한 페이지입니다. 어떤 피처를 선택했고, 왜 피처 엔지니어링을 했으며, 최종적으로 왜 원본 피처 기반 risk score를 유지했는지 설명합니다.
     </p>
   </header>
 
   <main>
     <section>
-      <h2>Executive Summary</h2>
+      <h2>1. 가정 - EDA 신호를 모델로 검증한다</h2>
       <div class="flow">
         <div class="box">
           <span>Modeling goal</span>
-          <strong>정확도보다 risk ranking</strong>
-          <p>이탈 고객을 상위 위험 구간에 모아 캠페인 우선순위를 정하는 것이 핵심 목표입니다.</p>
+          <strong>분류와 순위화 중 운영 목적 선택</strong>
+          <p>EDA에서 확인한 churn 신호를 모델로 검증한 뒤, 이탈 고객을 상위 위험 구간에 모으는 방식이 캠페인 운영에 더 적합한지 평가했습니다.</p>
         </div>
         <div class="box">
           <span>Feature decision</span>
@@ -455,8 +480,9 @@ def main() -> None:
     </section>
 
     <section>
-      <h2>1. 문제 정의와 평가 기준</h2>
+      <h2>2. 실험 설계 - 문제 정의와 평가 기준</h2>
       <div class="metrics">
+        <div class="metric"><span class="label">Final model</span><span class="value">{final_model_display}</span></div>
         <div class="metric"><span class="label">Test churn rate</span><span class="value">{pct(base_churn_rate)}</span></div>
         <div class="metric"><span class="label">Best PR AUC</span><span class="value">{num(best_model["pr_auc"])}</span></div>
         <div class="metric"><span class="label">Selected threshold</span><span class="value">{num(best_threshold["threshold"], 2)}</span></div>
@@ -467,14 +493,16 @@ def main() -> None:
         retention campaign에 활용하는 것입니다. 따라서 accuracy보다 churn 고객을 얼마나 잘 상위 risk 구간에 모으는지가 중요합니다.
       </p>
       <div class="note">
+        EDA 단계에서는 최근 접속 공백, 사용량, 콘텐츠 반응, 요금제/기기 차이를 후보 신호로 확인했습니다.
+        모델링 단계에서는 이 후보 신호들이 실제로 churn 고객을 상위 위험 구간에 모을 수 있는지 검증했습니다.
         PR AUC는 양성 클래스인 churn 고객을 얼마나 잘 구분하는지 보여주고,
         recall은 실제 이탈 고객을 얼마나 놓치지 않는지 보여줍니다.
-        캠페인 비용과 대상 품질을 함께 고려할 때는 F1과 top-k lift를 보조 지표로 사용했습니다.
+        ROC AUC는 전체 ranking 품질을 보는 보조 지표로 병기했지만, churn class가 소수인 상황에서는 PR AUC와 top-k lift가 캠페인 대상 품질을 더 직접적으로 설명합니다.
       </div>
     </section>
 
     <section>
-      <h2>2. 피처 선택 원칙</h2>
+      <h2>3. 실험 설계 - 피처 선택 원칙</h2>
       <p>
         원본 데이터에는 인구통계, 요금제, 기기, 콘텐츠 반응, 사용 빈도, 최근 접속 정보가 포함되어 있습니다.
         EDA와 상관관계 분석에서 churn과 가장 강하게 연결된 신호는 최근 로그인 공백, 시청량, 세션 수, completion rate,
@@ -484,6 +512,7 @@ def main() -> None:
         <div class="box">
           <strong>최종 모델 입력에 유지한 피처</strong>
           <ul>
+            <li>인구통계/지역: age, gender, region</li>
             <li>행동 강도: 시청시간, 세션 수, 주간 시청 세션</li>
             <li>콘텐츠 반응: completion, rating, recommendation click</li>
             <li>최근성: days since last login</li>
@@ -494,7 +523,7 @@ def main() -> None:
           <strong>신중하게 다룬 피처</strong>
           <ul>
             <li>user_id는 식별자라 제거</li>
-            <li>region/gender는 EDA상 차이가 작아 우선순위 낮음</li>
+            <li>gender/region은 최종 모델 입력에는 포함했지만, EDA상 차이가 작아 핵심 해석 변수로 강조하지 않음</li>
             <li>cluster label은 해석에는 유용하지만 예측 성능 개선은 제한적</li>
           </ul>
         </div>
@@ -502,7 +531,7 @@ def main() -> None:
     </section>
 
     <section>
-      <h2>3. 피처 엔지니어링 실험과 최종 판단</h2>
+      <h2>4. 실험 - 피처 엔지니어링 비교</h2>
       <p>
         피처 엔지니어링은 고위험 고객의 행동 패턴을 모델에 명시적으로 제공하기 위해 시도했습니다.
         ratio, engagement score, risk flag, categorical interaction, leakage-safe behavior feature, compact feature,
@@ -513,16 +542,18 @@ def main() -> None:
       <p>
         결론은 “파생변수가 무의미하다”가 아니라, 현재 합성 데이터에서는 원본 피처가 이미 강한 신호를 담고 있어
         많은 파생변수를 추가해도 ranking 품질이 개선되지 않았다는 것입니다.
-        따라서 최종 risk score 산출에는 원본 피처 기반 모델을 유지하고, behavior feature는 사후 profiling과 action matrix에 활용하는 판단이 합리적입니다.
+        따라서 최종 risk score 산출에는 원본 피처 기반 모델을 유지했습니다.
+        Engineered feature와 논문 기반 proxy feature는 최종 모델 입력으로 채택하지 않았으며,
+        성능 개선이 제한적이었다는 실험 근거와 고위험 고객 해석을 보조하는 참고 자료로 활용했습니다.
       </p>
     </section>
 
     <section>
-      <h2>4. 논문 기반 Feature Engineering</h2>
+      <h2>5. 실험 - 논문 기반 해석 피처</h2>
       <p>
         `07-5`에서는 OTT 해지 관련 선행연구를 바탕으로 가격 대비 가치, 추천/개인화 반응, 전환 위험,
         구독 피로감, 몰아보기/콘텐츠 고갈 proxy를 만들었습니다.
-        직접 관측되지 않는 개념은 현재 데이터의 사용량, 요금제, 추천 클릭률, 완료율, 최근 접속일로 대체 표현했습니다.
+        이 섹션은 성능 비교를 반복하기보다, 직접 관측되지 않는 개념을 현재 데이터의 사용량, 요금제, 추천 클릭률, 완료율, 최근 접속일로 어떻게 대체 표현했는지 정리합니다.
       </p>
       {dataframe_to_html(paper_feature_map, highlight_terms=("가격 부담", "추천 시스템", "구독 피로감"))}
       <p>
@@ -540,7 +571,7 @@ def main() -> None:
     </section>
 
     <section>
-      <h2>5. 모델링 진행 방식</h2>
+      <h2>6. 실험 - 모델 후보 비교와 앙상블</h2>
       <p>
         모델링은 baseline에서 시작해 튜닝과 앙상블로 확장했습니다.
         Logistic Regression, Random Forest, LightGBM, XGBoost, CatBoost를 비교했고,
@@ -550,12 +581,14 @@ def main() -> None:
       <div class="chart"><img alt="Model performance comparison" src="data:image/png;base64,{model_chart}" /></div>
       <p>
         Stacking이 PR AUC 기준 가장 높았지만, Logistic Regression 대비 개선 폭은 약 0.001 수준으로 작았습니다.
-        이는 복잡한 모델이 압도적으로 우수하다기보다, 현재 데이터의 churn 패턴이 원본 행동 피처만으로도 상당히 잘 설명된다는 의미에 가깝습니다.
+        따라서 “Stacking이 통계적으로 압도적”이라고 해석하지 않고, 동일한 원본 피처 체계에서 PR AUC와 recall이 모두 상위권인 후보로 채택했습니다.
+        이후 feature engineering 실험에서도 성능 개선이 제한적이었기 때문에 최종 저장 모델은 {final_model_display}로 정리했습니다.
+        실제 운영에서는 CV 분산이나 시간 분리 검증까지 확인해 모델 교체 여부를 판단하는 것이 적절합니다.
       </p>
     </section>
 
     <section>
-      <h2>6. Threshold와 Ranking을 분리해서 본 이유</h2>
+      <h2>7. 결과 - threshold와 ranking 분리</h2>
       <p>
         threshold 0.5는 기본값일 뿐이고, 캠페인 운영 목적에 맞는 최적 기준이 아닐 수 있습니다.
         threshold를 올리면 precision은 올라가지만 recall은 낮아지고, threshold를 낮추면 더 많은 이탈자를 잡지만 오탐이 많아집니다.
@@ -565,13 +598,14 @@ def main() -> None:
       <p>
         최종 운영 관점에서는 하나의 threshold로 모든 의사결정을 끝내기보다,
         예산에 따라 상위 10%, 20%, 30% 고객을 순차적으로 타겟팅하는 ranking 방식이 더 실무적입니다.
+        따라서 F1-balanced threshold는 분류 성능을 이해하기 위한 참고값이며, 최종 캠페인 대상 선정은 threshold가 아니라 risk score ranking을 기준으로 진행했습니다.
       </p>
     </section>
 
     <section>
-      <h2>7. 최종 결론</h2>
+      <h2>8. 최종 - Stacking (original features) 유지</h2>
       <div class="note">
-        최종 모델링 결론은 “원본 피처 기반 risk score를 사용하고, 피처 엔지니어링 결과는 비즈니스 해석과 캠페인 세분화에 활용한다”입니다.
+        최종 모델링 결론은 “원본 피처 기반 risk score를 사용하고, 피처 엔지니어링 결과는 최종 모델 입력으로 채택하지 않는다”입니다.
       </div>
       <p>
         모델 성능은 이미 합성 데이터에서 높은 수준에 도달했기 때문에, 추가 성능 개선보다 중요한 것은
