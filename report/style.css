@@ -417,9 +417,10 @@ tr:hover td {
 .pipeline {
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
     padding: 1.5rem;
-    overflow-x: auto;
+    flex-wrap: wrap;
 }
 
 .pipeline-step {
@@ -1136,6 +1137,18 @@ a:focus-visible {
     width: 100%;
     border-radius: var(--radius);
     border: 1px solid var(--border);
+}
+.chart-img-sm {
+    max-width: 480px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+.chart-img-md {
+    max-width: 720px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 .chart-img-caption {
     font-size: 0.75rem;
