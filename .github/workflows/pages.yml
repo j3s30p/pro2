@@ -20,6 +20,7 @@ concurrency:
 
 jobs:
   deploy:
+    if: github.repository == 'j3s30p/pro2'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
