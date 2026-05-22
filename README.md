@@ -54,57 +54,55 @@ EDA -> Clustering -> Modeling -> Risk Ranking -> Retention Strategy -> KKBOX Val
 
 ```text
 .
-├── .github/
-│   └── workflows/
-│       └── pages.yml
+├── .github/workflows/
+│   └── pages.yml                                    # GitHub Pages 자동 배포
 ├── data/
 │   ├── KKBOX/
-│   │   └── kkbox_netflix_format.csv
+│   │   └── kkbox_netflix_format.csv                 # KKBOX 실제 구독 데이터 (검증용)
 │   └── user_behavior_50000/
-│       ├── netflix_user_behavior_churn_50000.csv
-│       └── netflix_user_behavior_churn_50000v2.csv
+│       ├── netflix_user_behavior_churn_50000.csv     # Netflix-style 합성 데이터 (이전 버전)
+│       └── netflix_user_behavior_churn_50000v2.csv   # Netflix-style 합성 데이터 (메인)
 ├── models/
-│   ├── final_churn_model_metadata.json
-│   └── final_churn_stacking_pipeline.joblib
+│   ├── final_churn_model_metadata.json               # 최종 모델 메타데이터
+│   └── final_churn_stacking_pipeline.joblib           # 최종 Stacking 파이프라인
 ├── notebooks/
-│   ├── 01_eda_segment_insight.ipynb
-│   ├── 02_clustering_binned.ipynb
-│   ├── 03_clustering_scaled.ipynb
-│   ├── 04_churn_modeling_baseline.ipynb
-│   ├── 05_churn_modeling_tuning_ensemble.ipynb
-│   ├── 06_churn_model_interpretation_action.ipynb
-│   ├── 07-1_churn_feature_engineering_first_try.ipynb
-│   ├── 07-2_churn_behavior_feature_engineering_pipeline.ipynb
-│   ├── 07-3_churn_auc_f1_optimization.ipynb
-│   ├── 07-4_churn_f1_optimization_light.ipynb
-│   ├── 07-5_churn_paper_based_feature_engineering.ipynb
-│   └── 08_kkbox_transfer_indomain.ipynb
+│   ├── 01_eda_segment_insight.ipynb                  # EDA + 세그먼트별 이탈률
+│   ├── 02_clustering_binned.ipynb                    # 구간화 기반 KMeans
+│   ├── 03_clustering_scaled.ipynb                    # 스케일링 기반 KMeans (최종)
+│   ├── 04_churn_modeling_baseline.ipynb              # Baseline 모델 비교
+│   ├── 05_churn_modeling_tuning_ensemble.ipynb        # CV + 튜닝 + 앙상블 (최종 모델)
+│   ├── 06_churn_model_interpretation_action.ipynb     # Risk ranking + 리텐션 전략
+│   ├── 07-1_churn_feature_engineering_first_try.ipynb # FE 실험: 고정 임계값
+│   ├── 07-2_churn_behavior_feature_engineering_pipeline.ipynb  # FE 실험: 데이터 기반 임계값
+│   ├── 07-3_churn_auc_f1_optimization.ipynb          # AUC/F1 최적화
+│   ├── 07-4_churn_f1_optimization_light.ipynb        # 경량 F1 탐색
+│   ├── 07-5_churn_paper_based_feature_engineering.ipynb  # FE 실험: 논문 기반 proxy
+│   └── 08_kkbox_transfer_indomain.ipynb              # KKBOX 전이/검증
 ├── outputs/
-│   ├── churn_model_final_result.csv
-│   ├── churn_risk_scores_test.csv
-│   ├── churn_threshold_result.csv
-│   ├── experiment_comparison.csv
-│   ├── final_churn_model_eval.csv
-│   ├── final_churn_risk_scores_test.csv
-│   ├── final_churn_topk_metrics.csv
-│   ├── kkbox_indomain_result.csv
-│   └── kkbox_transfer_result.csv
-├── report/
-│   ├── images/
-│   │   └── *.png
-│   ├── index.html
-│   ├── eda.html
-│   ├── clustering.html
-│   ├── feature_engineering.html
-│   ├── modeling.html
-│   ├── results.html
-│   ├── business_insight.html
-│   └── style.css
-├── .gitattributes
-├── .gitignore
-├── .python-version
-├── pyproject.toml
-├── uv.lock
+│   ├── churn_model_final_result.csv                  # 모델별 최종 성능 비교
+│   ├── churn_risk_scores_test.csv                    # 테스트셋 risk score
+│   ├── churn_threshold_result.csv                    # Threshold별 P/R/F1
+│   ├── experiment_comparison.csv                     # FE 실험 비교
+│   ├── final_churn_model_eval.csv                    # 최종 모델 평가
+│   ├── final_churn_risk_scores_test.csv              # 최종 risk score
+│   ├── final_churn_topk_metrics.csv                  # Top-K 지표
+│   ├── kkbox_indomain_result.csv                     # KKBOX in-domain 결과
+│   └── kkbox_transfer_result.csv                     # KKBOX transfer 결과
+├── report/                                           # GitHub Pages 정적 리포트
+│   ├── images/*.png                                  # 차트 이미지
+│   ├── index.html                                    # 프로젝트 개요
+│   ├── background.html                               # 프로젝트 배경
+│   ├── eda.html                                      # 탐색적 데이터 분석
+│   ├── clustering.html                               # 고객 군집화
+│   ├── feature_engineering.html                      # 피처 엔지니어링 실험
+│   ├── modeling.html                                 # 모델링 파이프라인
+│   ├── results.html                                  # 예측 결과 분석
+│   ├── business_insight.html                         # 비즈니스 인사이트
+│   └── style.css                                     # 공통 스타일
+├── .gitattributes                                    # Git LFS 설정
+├── .python-version                                   # Python 버전 (>=3.14)
+├── pyproject.toml                                    # 프로젝트 의존성
+├── uv.lock                                           # uv 락파일
 └── README.md
 ```
 
@@ -218,6 +216,7 @@ Netflix-style 데이터는 합성 데이터이므로 모델 성능과 일반화 
 | Page | Content |
 | --- | --- |
 | `report/index.html` | 프로젝트 개요와 전체 흐름 |
+| `report/background.html` | 프로젝트 배경과 문제 정의 |
 | `report/eda.html` | EDA, 타겟 분포, 상관관계, 세그먼트별 이탈률 |
 | `report/clustering.html` | KMeans 고객 군집화와 군집별 churn profile |
 | `report/feature_engineering.html` | 5회 feature engineering 실험과 미채택 사유 |
@@ -264,7 +263,7 @@ Feature engineering은 총 5회 실험했습니다.
 
 결론적으로, 파생변수는 최종 성능을 일관되게 개선하지 못했습니다. 기존 원본 피처인 최근 로그인 공백, 시청 시간, 완료율, 추천 클릭률 등이 이미 강한 이탈 신호를 담고 있었기 때문입니다.
 
-따라서 최종 운영 모델은 원본 피처 기반 Stacking을 유지했습니다. 다만 파생변수와 논문 기반 proxy feature는 고위험 고객의 행동을 설명하고 캠페인 액션을 설계하는 보조 근거로 활용했습니다.
+따라서 최종 운영 모델은 원본 피처 기반 Stacking을 유지했습니다.
 
 ## Business Interpretation
 
@@ -297,14 +296,7 @@ Risk group 운영 방향:
 - Mobile 사용 비중이 높은 가격 민감 고객에게는 **Mobile-only 저가 요금제**를 제안해 완전 해지를 저가 유지로 전환합니다.
 - 성장기/장기 Basic 고객 중 risk score가 높은 고객에게는 **Standard 업그레이드 1개월 쿠폰**을 제공해 상위 요금제 가치를 체험하게 합니다.
 
-외부 리텐션 사례와도 방향이 일치합니다. Harvard Business Review는 모든 고객을 동일하게 유지하려 하기보다 장기 가치가 높은 고객을 구분해 관리하는 것이 중요하다고 설명합니다. 또한 OTT 구독 해지 관련 논문에서 제시된 가격 민감도, 추천/개인화 반응, 전환 위험, 구독 피로감 요인을 proxy feature로 구현해 고위험 고객 해석에 활용했습니다.
-
-참고 자료:
-
-- HBR: https://hbr.org/2014/10/the-value-of-keeping-the-right-customers
-- OTT 서비스의 이용자는 왜 구독을 해지하는가?: https://www.dbpia.co.kr/pdf/pdfAiChatView.do?nodeId=NODE11396704&width=1470
-- 구독 피로감과 가격 민감도가 OTT 서비스의 구독 해지 의도에 미치는 영향: 사용자 경험(UX)의 조절 효과를 중심으로: https://www.dbpia.co.kr/pdf/pdfAiChatView.do?nodeId=NODE12538822&width=1151
-- OTT 플랫폼 유형에 따른 구독 해지 결정요인 분석: 전략적 포지셔닝을 위한 함의: https://www.kci.go.kr/kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART003293403
+외부 리텐션 사례와도 방향이 일치합니다. Harvard Business Review는 모든 고객을 동일하게 유지하려 하기보다 장기 가치가 높은 고객을 구분해 관리하는 것이 중요하다고 설명합니다.
 
 ## KKBOX Validation
 
@@ -321,10 +313,5 @@ Netflix-style 데이터는 합성 데이터이므로 모델 성능에 한계가 
 
 ## Notes
 
-- `05_churn_modeling_tuning_ensemble.ipynb`는 최종 모델과 risk score를 저장합니다.
-- `06_churn_model_interpretation_action.ipynb`는 저장된 결과를 읽어 해석과 액션 전략을 만듭니다.
 - `07-*` 노트북은 추가 feature engineering / optimization 실험 기록입니다.
-- `08_kkbox_transfer_indomain.ipynb`는 KKBOX 검증용 노트북입니다.
-- `report/`는 현재 정적 HTML 리포트의 실제 소스입니다.
-- `scripts/` 디렉토리는 사용하지 않습니다.
-- `.venv/`, `catboost_info/`, `.ipynb_checkpoints/`, `.DS_Store`, `.matplotlib-cache/` 등은 git 추적에서 제외합니다.
+- `.venv/`, `catboost_info/`, `.ipynb_checkpoints/`, `.DS_Store` 등은 git 추적에서 제외합니다.
