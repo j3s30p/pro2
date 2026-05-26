@@ -67,7 +67,7 @@
                         <div style="padding:0.6rem 0.75rem; background:rgba(245,158,11,0.04); border-radius:6px;">
                             <div style="font-size:0.7rem; color:var(--text-muted);">대상</div>
                             <div style="font-size:0.85rem; font-weight:600; margin-top:0.15rem;">성장기/장기 Basic 고객</div>
-                            <div style="font-size:0.75rem; color:var(--text-muted);">risk score 상위 — 약 586명 (상위 10% 내 58.6%)</div>
+                            <div style="font-size:0.75rem; color:var(--text-muted);">risk score 상위 10% 중 성장기/장기 고객 (78.3%)</div>
                         </div>
                         <div style="padding:0.6rem 0.75rem; background:rgba(245,158,11,0.04); border-radius:6px;">
                             <div style="font-size:0.7rem; color:var(--text-muted);">혜택</div>
@@ -113,6 +113,65 @@
                     <p style="font-size:0.8rem; color:var(--text-secondary); line-height:1.5;">모바일에서만 사용할 수 있지만 더 저렴한 요금제를 제안하여, 가격 부담으로 인한 완전 해지를 저가 유지로 전환합니다.</p>
                 </div>
             </div>
+        </div>
+
+        <!-- Tenure Segmentation within Top 10% -->
+        <div class="card" style="margin-top:1.5rem; border:1px solid rgba(245,158,11,0.25); background:linear-gradient(135deg, rgba(245,158,11,0.06), rgba(229,9,20,0.04));">
+            <h3 style="margin-bottom:0.5rem;">타겟 세분화: Top 10% 내 구독 기간별 분류</h3>
+            <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.25rem;">
+                고위험 상위 10%(1,000명)를 마냥 전부 타겟팅하는 것이 아니라,
+                <strong>구독 기간(account_age_months)</strong>에 따라 한 단계 더 세분화합니다.
+            </p>
+
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:0.75rem; margin-bottom:1.25rem;">
+                <div style="padding:0.75rem; border-radius:8px; background:rgba(148,163,184,0.08); border:1px solid rgba(148,163,184,0.15); text-align:center; opacity:0.6;">
+                    <div style="font-size:0.7rem; color:var(--text-muted); font-weight:600;">0~6개월</div>
+                    <div style="font-size:1rem; font-weight:700; margin:0.25rem 0;">신규</div>
+                    <div style="font-size:0.7rem; color:var(--text-muted);">제외</div>
+                </div>
+                <div style="padding:0.75rem; border-radius:8px; background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); text-align:center;">
+                    <div style="font-size:0.7rem; color:var(--accent-orange); font-weight:600;">6~24개월</div>
+                    <div style="font-size:1rem; font-weight:700; color:var(--accent-orange); margin:0.25rem 0;">성장기</div>
+                    <div style="font-size:0.7rem; color:var(--accent-orange); font-weight:600;">타겟</div>
+                </div>
+                <div style="padding:0.75rem; border-radius:8px; background:rgba(245,158,11,0.1); border:1px solid rgba(245,158,11,0.3); text-align:center;">
+                    <div style="font-size:0.7rem; color:var(--accent-orange); font-weight:600;">24~60개월</div>
+                    <div style="font-size:1rem; font-weight:700; color:var(--accent-orange); margin:0.25rem 0;">장기</div>
+                    <div style="font-size:0.7rem; color:var(--accent-orange); font-weight:600;">타겟</div>
+                </div>
+                <div style="padding:0.75rem; border-radius:8px; background:rgba(148,163,184,0.08); border:1px solid rgba(148,163,184,0.15); text-align:center; opacity:0.6;">
+                    <div style="font-size:0.7rem; color:var(--text-muted); font-weight:600;">60개월+</div>
+                    <div style="font-size:1rem; font-weight:700; margin:0.25rem 0;">충성</div>
+                    <div style="font-size:0.7rem; color:var(--text-muted);">제외</div>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:auto 1fr; gap:1.25rem; align-items:start;">
+                <div style="text-align:center; padding:1rem 1.5rem; background:rgba(245,158,11,0.08); border-radius:8px;">
+                    <div style="font-size:2rem; font-weight:800; color:var(--accent-orange);">78.3%</div>
+                    <div style="font-size:0.75rem; color:var(--text-muted);">상위 10% 내 성장기+장기 비중</div>
+                </div>
+                <div style="font-size:0.85rem; color:var(--text-secondary); line-height:1.7;">
+                    <div style="margin-bottom:0.5rem;">
+                        <strong style="color:var(--text-primary);">신규 고객 제외:</strong>
+                        구독 기간이 6개월 미만인 고객은 서비스 경험이 부족해 상위 요금제의 가치 차이를 체감하기 어렵습니다. 업그레이드 쿠폰의 효과가 제한적입니다.
+                    </div>
+                    <div style="margin-bottom:0.5rem;">
+                        <strong style="color:var(--accent-orange);">성장기/장기 고객 선택:</strong>
+                        이미 사용 습관이 형성된 고객이므로, Basic의 한계(SD 화질·단일 기기)를 인식하고 있습니다. Standard 체험 시 가치 인식이 극대화되어 유지 또는 업그레이드 전환 가능성이 높습니다.
+                    </div>
+                    <div>
+                        <strong style="color:var(--text-primary);">충성 고객 제외:</strong>
+                        60개월 이상 유지한 고객은 이미 서비스에 충분히 정착해 있어, 할인/업그레이드보다 기존 경험 유지가 더 적합합니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card chart-img-wrap" style="margin-top:1.5rem;">
+            <h3>High Risk 상위 10% 내 구독 기간별 분포</h3>
+            <img src="images/insight_tenure_segmentation.png" alt="Top 10% 구독 기간별 세분화" class="chart-img">
+            <p class="chart-img-caption">성장기(6~24개월)와 장기(24~60개월) 고객이 상위 10%의 78.3%를 차지 — 캠페인 타겟으로 선정</p>
         </div>
 
         <div class="grid-2" style="margin-top:1.5rem;">
